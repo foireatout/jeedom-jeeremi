@@ -1,0 +1,13 @@
+{
+  "id": "JeeRemi",
+  "name": "JeeRemi",
+  "version": "1.2",
+  "licence": "AGPL",
+  "author": "foireatout",
+  "category": "communication",
+  "require": "4.0",
+  "hasDependency": true,
+  "hasOwnDeamon": false,
+  "hasOwnTab": true,
+  "changelog": "1.2 Add plugin icon, admin panel, ensure logs on test/save and sync"
+}
