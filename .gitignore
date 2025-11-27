@@ -1,0 +1,6 @@
+# Ignorer le dossier de l'environnement virtuel Python
+resources/python_venv/
+
+# Autres exclusions éventuelles
+*.log
+*.tmp
