@@ -8,7 +8,6 @@ if (!isConnect()) { throw new Exception(__('401 - Accès non autorisé', __FILE_
 
     <div class="form-group">
       <div class="col-sm-12">
-        <a class="btn btn-success" id="jr_test"><i class="fas fa-plug"></i> Tester la connexion</a>
         <a class="btn btn-info" id="jr_sync"><i class="fas fa-sync"></i> Synchroniser mes REMI</a>
         <a class="btn btn-default" id="jr_refresh"><i class="fas fa-redo"></i> Rafraîchir la liste</a>
       </div>
@@ -43,10 +42,15 @@ jQuery(function($){
       url:'plugins/JeeRemi/core/ajax/JeeRemi.ajax.php',
       data:{ action:'syncRemi', PHPSESSID: '<?php echo session_id(); ?>' },
       dataType:'json',
-      success:function(){ setResult('<div class="alert alert-info">Synchronisation terminée</div>'); loadTable(); },
+      success:function(res){
+        setResult('<div class="alert alert-info">Synchronisation terminée</div>');
+        // après synchro, forcer chargement des infos et rafraîchissement UI
+        loadTable();
+      },
       error:function(xhr){ setResult('<div class="alert alert-danger">Erreur synchro: '+xhr.responseText+'</div>'); }
     });
   });
+
 
   function loadTable(){
     $('#jr_table').html('<i>Chargement...</i>');

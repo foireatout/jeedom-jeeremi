@@ -1,0 +1,3 @@
+  "installation": {
+    "script": "resources/install_apt.sh"
+	}

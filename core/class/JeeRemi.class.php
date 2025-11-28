@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__).'/JeeRemiCmd.class.php';
 require_once dirname(__FILE__).'/../api/urbanhello_api_wrapper.php';
 
 class JeeRemi extends eqLogic {
@@ -43,62 +44,67 @@ class JeeRemi extends eqLogic {
 
             // create commands (idempotent)
             $eq->createCommands();
+			$eq->updateInfos();
         }
+		
+      	// After creation, ensure commands created and initial values present
+        foreach (self::byType('JeeRemi') as $eqToUpdate) {
+            try {
+                $eqToUpdate->updateInfos();
+            } catch (Exception $e) {
+        log::add('JeeRemi','error','updateInfos failed for '.$eqToUpdate->getLogicalId().' : '.$e->getMessage());
+    }
+}
 
         log::add('JeeRemi','info','syncRemi terminé');
     }
 
     public function createCommands() {
-        // list: logicalId, type, subtype, humanName
-        $cmds = [
-            ['set_veilleuse','action','slider','Régler luminosité'],
-            ['veilleuse','info','numeric','Luminosité (%)'],
-            ['set_volume','action','slider','Régler volume'],
-            ['volume','info','numeric','Volume (%)'],
-            ['temperature','info','numeric','Température'],
-            ['face','info','string','Face'],
-            ['Visage_num','info','numeric','Visage (num)'],
-            ['nom','info','string','Nom'],
-            ['online','info','binary','Online'],
-            ['alive','info','binary','Alive'],
-            ['IP','info','string','IP'],
-            ['RSSI','info','numeric','RSSI'],
-            ['MusicPath','info','string','Music Path'],
-            ['MusicMode','info','string','Music Mode'],
-            ['last_update','info','string','Dernière mise à jour'],
-            ['awakeFace','action','other','Visage éveillé'],
-            ['sleepyFace','action','other','Visage endormi'],
-            ['semiAwakeFace','action','other','Visage semi-ouvert'],
-            ['blankFace','action','other','Visage blanc'],
-            ['play_music','action','message','Démarrer musique'],
-            ['stop_music','action','other','Arrêter musique']
-        ];
+    $cmds = [
+        // logicalId, type, subType, humanName, options array
+        ['set_veilleuse','action','slider','Régler luminosité', ['min'=>0,'max'=>100,'unit'=>'%']],
+        ['veilleuse','info','numeric','Luminosité', []],
+        ['set_volume','action','slider','Régler volume', ['min'=>0,'max'=>100,'unit'=>'%']],
+        ['volume','info','numeric','Volume', []],
+        ['temperature','info','numeric','Température', []],
+        ['face','info','string','Face', []],
+        ['Visage_num','info','numeric','Visage (num)', []],
+        ['nom','info','string','Nom', []],
+        ['online','info','binary','Online', []],
+        ['alive','info','binary','Alive', []],
+        ['IP','info','string','IP', []],
+        ['RSSI','info','numeric','RSSI', []],
+        ['MusicPath','info','string','MusicPath', []],
+        ['MusicMode','info','string','MusicMode', []],
+        ['last_update','info','string','Dernière mise à jour', []],
+        ['awakeFace','action','other','Visage éveillé', []],
+        ['sleepyFace','action','other','Visage endormi', []],
+        ['semiAwakeFace','action','other','Visage semi-ouvert', []],
+        ['blankFace','action','other','Visage blanc', []],
+        ['play_music','action','message','Démarrer musique', ['template'=>'{{message}}']],
+        ['stop_music','action','other','Arrêter musique', []]
+    ];
 
-        foreach ($cmds as $c) {
-            $logical = $c[0];
-            $type = $c[1];
-            $subtype = $c[2];
-            $name = $c[3];
-
-            if (!is_object($this->getCmd(null, $logical))) {
-                $cmd = new cmd();
-                $cmd->setName($name);
-                $cmd->setEqLogic_id($this->getId());
-                $cmd->setLogicalId($logical);
-                $cmd->setType($type);
-                $cmd->setSubType($subtype);
-                if ($subtype == 'slider') {
-                    $cmd->setConfiguration('minValue',0);
-                    $cmd->setConfiguration('maxValue',100);
-                    $cmd->setUnite('%');
-                }
-                if ($subtype == 'message') {
-                    $cmd->setConfiguration('template','{{message}}');
-                }
-                $cmd->save();
-            }
+    foreach ($cmds as $c) {
+        list($logical,$type,$subtype,$name,$opts) = $c;
+        if (!is_object($this->getCmd(null, $logical))) {
+            $cmd = new JeeRemiCmd();
+            $cmd->setName($name);
+            $cmd->setEqLogic_id($this->getId());
+            $cmd->setLogicalId($logical);
+            $cmd->setType($type);
+            $cmd->setSubType($subtype);
+            // options
+            if (isset($opts['min'])) $cmd->setConfiguration('minValue',$opts['min']);
+            if (isset($opts['max'])) $cmd->setConfiguration('maxValue',$opts['max']);
+            if (isset($opts['unit'])) $cmd->setUnite($opts['unit']);
+            if ($subtype == 'message' && isset($opts['template'])) $cmd->setConfiguration('template', $opts['template']);
+            $cmd->save();
+            log::add('JeeRemi','info','Création commande '.$logical.' pour eq '.$this->getLogicalId());
         }
     }
+}
+
 
     public static function cron5() {
         foreach (self::byType('JeeRemi') as $eq) {

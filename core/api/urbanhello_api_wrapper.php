@@ -16,7 +16,21 @@ class JeeRemiApi {
             return false;
         }
 
-        $python = realpath(__DIR__ . '/../../resources/python_venv/bin/python3');
+        $possible = [
+            __DIR__ . '/../../python_venv/bin/python3',
+            __DIR__ . '/../../venv/bin/python3',
+            __DIR__ . '/../../resources/venv/bin/python3',
+            '/usr/bin/python3',
+            '/usr/bin/env python3'
+        ];
+        $python = null;
+        foreach ($possible as $p) {
+            $rp = realpath($p);
+            if ($rp !== false && is_executable($rp)) { $python = $rp; break; }
+        }
+        // fallback to just the string (env) if nothing exists
+        if ($python === null) $python = '/usr/bin/env python3';
+
 
         // Construire la commande en échappant chaque argument
         $cmdParts = array_merge([$python, $script], $args);

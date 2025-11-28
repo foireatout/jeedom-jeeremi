@@ -2,6 +2,35 @@
 if (!isConnect()) {
     throw new Exception(__('401 - Accès non autorisé', __FILE__));
 }
+
+/* -----------------------------------------------------------
+ * Vérification des dépendances (AFFICHAGE conditionnel)
+ * -----------------------------------------------------------
+ * On ne touche PAS au système de dépendances Jeedom.
+ * Le venv est créé automatiquement ici :
+ *   /plugins/JeeRemi/resources/python_venv/bin/python3
+ * -----------------------------------------------------------
+ */
+
+$venv_python = realpath(__DIR__ . '/../resources/python_venv/bin/python3');
+$dep_ok = false;
+
+if ($venv_python && file_exists($venv_python) && is_executable($venv_python)) {
+    // Test rapide du python du venv
+    $out = trim(shell_exec(escapeshellcmd($venv_python) . ' --version 2>&1'));
+    if ($out !== '') {
+        $dep_ok = true;
+    }
+}
+
+if (!$dep_ok) {
+    echo '<div class="alert alert-warning">
+            Les dépendances ne sont pas encore installées ou le venv est manquant.<br>
+            Merci d\'aller sur l\'onglet <strong>Dépendances</strong> pour les installer.
+          </div>';
+    // On NE montre PAS le formulaire tant que ce n’est pas OK
+    return;
+}
 ?>
 
 <div class="row">
@@ -73,7 +102,7 @@ jQuery(function($){
     });
   });
 
-  // Detected Remi list (from API)
+  // Charger liste REMI
   function loadDetected() {
     $('#JeeRemiDetectedTable').html('<i>Chargement...</i>');
     $.ajax({
@@ -82,7 +111,10 @@ jQuery(function($){
       data: { action:'listRemi', PHPSESSID: '<?php echo session_id(); ?>' },
       dataType:'json',
       success:function(res){
-        if (!res || !res.remis) { $('#JeeRemiDetectedTable').html('<div class="alert alert-warning">Aucun REMI détecté ou erreur.</div>'); return; }
+        if (!res || !res.remis) {
+          $('#JeeRemiDetectedTable').html('<div class="alert alert-warning">Aucun REMI détecté ou erreur.</div>');
+          return;
+        }
         var html = '<table class="table table-condensed"><thead><tr><th>Nom</th><th>ID</th></tr></thead><tbody>';
         res.remis.forEach(function(r){
           html += '<tr><td>'+ (r.name ? r.name : 'REMI') +'</td><td>'+r.objectId+'</td></tr>';
@@ -90,7 +122,10 @@ jQuery(function($){
         html += '</tbody></table>';
         $('#JeeRemiDetectedTable').html(html);
       },
-      error:function(xhr){ $('#JeeRemiDetectedTable').html('<div class="alert alert-danger">Erreur: '+xhr.responseText+'</div>'); console.log(xhr.responseText); }
+      error:function(xhr){
+        $('#JeeRemiDetectedTable').html('<div class="alert alert-danger">Erreur: '+xhr.responseText+'</div>');
+        console.log(xhr.responseText);
+      }
     });
   }
 

@@ -1,32 +1,38 @@
 <?php
-/* This file is part of Jeedom.
-*
-* Jeedom is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* Jeedom is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
-*/
 
-require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
+class JeeRemiInstall
+{
+    public static function postInstall()
+    {
+        self::launchDep();
+    }
 
-//Fonction exécutée automatiquement après l'installation du plugin
-function JeeRemi_install() {
+    public static function postUpdate()
+    {
+        self::launchDep();
+    }
 
-}
+    public static function launchDep()
+    {
+        $plugin = plugin::byId('JeeRemi');
+        $plugin->setState('dependencies', 'nok');
+        $plugin->save();
 
-//Fonction exécutée automatiquement après la mise à jour du plugin
-function JeeRemi_update() {
-	//JeeRemi::deamon_start();
-}
+        // Déclenche l'installation officielle des dépendances
+        jeedom::getPlugin('JeeRemi')->installDependancy();
+    }
 
-// Fonction exécutée automatiquement après la suppression du plugin
-function JeeRemi_remove() {   
+    public static function checkDependancy()
+    {
+        $plugin = plugin::byId('JeeRemi');
+        $python = __DIR__ . '/../resources/python_venv/bin/python3';
+
+        if (file_exists($python) && is_executable($python)) {
+            $plugin->setState('dependencies', 'ok');
+        } else {
+            $plugin->setState('dependencies', 'nok');
+        }
+
+        $plugin->save();
+    }
 }

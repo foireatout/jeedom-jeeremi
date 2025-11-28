@@ -22,8 +22,18 @@ try {
         case 'testLogin':
             $username = init('username');
             $password = init('password');
-            ajax::success(JeeRemiApi::login($username, $password));
+            $res = JeeRemiApi::login($username, $password);
+            if ($res === false) {
+                ajax::error('Erreur appel API (voir logs).');
+            }
+            if (!is_array($res) || !isset($res['sessionToken'])) {
+                // transmettre l'erreur lisible si possible
+                $msg = is_string($res) ? $res : json_encode($res);
+                ajax::error('Login API échoué : ' . $msg);
+            }
+            ajax::success(array('status' => 'ok', 'user' => $res));
             break;
+
 
         case 'listRemi':
             // returns userInfo with remis array
@@ -40,9 +50,11 @@ try {
             break;
 
         case 'syncRemi':
+            log::add('JeeRemi','info','Ajax syncRemi requested');
             JeeRemi::syncRemi();
             ajax::success('OK');
             break;
+
 
         case 'remiInfo':
             $remiId = init('remiId');
@@ -54,6 +66,23 @@ try {
             $token = $login['sessionToken'];
             $info = JeeRemiApi::remiInfo($token, $remiId);
             ajax::success($info);
+            break;
+        
+        
+        case 'dependancy_install':
+            log::add('JeeRemi', 'info', 'Installation des dépendances lancée');
+
+            // on demande à Jeedom de lancer les dépendances
+            jeedom::setProgressBar(0);
+
+            // lance réellement l’installation
+            $cmd = 'sudo /bin/bash ' . dirname(__FILE__) . '/../../resources/install_apt.sh';
+            $return = system($cmd . ' >> ' . log::getPathToLog('JeeRemi_dep') . ' 2>&1');
+
+            plugin::byId('JeeRemi')->setState('dependencies', 'ok');
+            plugin::byId('JeeRemi')->save();
+
+            ajax::success();
             break;
 
         default:
