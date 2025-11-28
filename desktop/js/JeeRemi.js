@@ -1,5 +1,5 @@
-jQuery(function($){
-  // Placeholder for future UI interactions per-equipment
-  // e.g. event handlers injected by eqLogic pages
+jQuery(function($) {
+  // Placeholder pour les futures interactions par équipement
+  // Par exemple : gestionnaires d'événements injectés par les pages eqLogic
   console.log('JeeRemi.js loaded');
 });

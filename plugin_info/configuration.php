@@ -3,135 +3,67 @@ if (!isConnect()) {
     throw new Exception(__('401 - Accès non autorisé', __FILE__));
 }
 
-/* -----------------------------------------------------------
- * Vérification des dépendances (AFFICHAGE conditionnel)
- * -----------------------------------------------------------
- * On ne touche PAS au système de dépendances Jeedom.
- * Le venv est créé automatiquement ici :
- *   /plugins/JeeRemi/resources/python_venv/bin/python3
- * -----------------------------------------------------------
- */
-
 $venv_python = realpath(__DIR__ . '/../resources/python_venv/bin/python3');
 $dep_ok = false;
-
 if ($venv_python && file_exists($venv_python) && is_executable($venv_python)) {
-    // Test rapide du python du venv
     $out = trim(shell_exec(escapeshellcmd($venv_python) . ' --version 2>&1'));
     if ($out !== '') {
         $dep_ok = true;
     }
 }
-
 if (!$dep_ok) {
     echo '<div class="alert alert-warning">
-            Les dépendances ne sont pas encore installées ou le venv est manquant.<br>
+            Les dépendances ne sont pas encore installées.<br>
             Merci d\'aller sur l\'onglet <strong>Dépendances</strong> pour les installer.
           </div>';
-    // On NE montre PAS le formulaire tant que ce n’est pas OK
     return;
 }
 ?>
 
 <div class="row">
-  <div class="col-sm-6">
+  <div class="col-sm-12 text-center">
     <legend><i class="fas fa-user-circle"></i> Compte UrbanHello</legend>
-
     <div class="form-group">
       <label class="col-sm-4 control-label">Login (email)</label>
       <div class="col-sm-8">
         <input class="configKey form-control" data-l1key="username" placeholder="email@domain.tld"/>
       </div>
     </div>
-
     <div class="form-group">
       <label class="col-sm-4 control-label">Mot de passe</label>
       <div class="col-sm-8">
         <input type="password" class="configKey form-control" data-l1key="password" placeholder="••••••"/>
       </div>
     </div>
-
     <div class="form-group">
       <label class="col-sm-4 control-label"></label>
       <div class="col-sm-8">
-        <a class="btn btn-success" id="JeeRemiTestLogin"><i class="fas fa-plug"></i> Tester la connexion</a>
         <a class="btn btn-info" id="JeeRemiSync"><i class="fas fa-sync"></i> Synchroniser mes REMI</a>
       </div>
     </div>
-
     <div id="JeeRemiConfigResult"></div>
-  </div>
-
-  <div class="col-sm-6">
-    <legend><i class="fas fa-list"></i> REMI détectés (aperçu)</legend>
-    <div id="JeeRemiDetectedContainer">
-      <button class="btn btn-default" id="JeeRemiRefreshDetected">Rafraîchir la liste</button>
-      <div id="JeeRemiDetectedTable" style="margin-top:10px"></div>
-    </div>
   </div>
 </div>
 
 <script>
-jQuery(function($){
+jQuery(function($) {
+  function showResult(html) {
+    $('#JeeRemiConfigResult').html(html);
+  }
 
-  function showResult(html){ $('#JeeRemiConfigResult').html(html); }
-
-  // Tester la connexion
-  $('#JeeRemiTestLogin').on('click', function(){
-    var username = $('.configKey[data-l1key=username]').val();
-    var password = $('.configKey[data-l1key=password]').val();
-    $.ajax({
-      type: 'POST',
-      url: 'plugins/JeeRemi/core/ajax/JeeRemi.ajax.php',
-      data: { action: 'testLogin', PHPSESSID: '<?php echo session_id(); ?>', username: username, password: password },
-      dataType: 'json',
-      success: function(res){ showResult('<div class="alert alert-success">Connexion OK</div>'); },
-      error: function(xhr){ showResult('<div class="alert alert-danger">Erreur AJAX: '+xhr.responseText+'</div>'); console.log(xhr.responseText); }
-    });
-  });
-
-  // Synchroniser
-  $('#JeeRemiSync').on('click', function(){
+  $('#JeeRemiSync').on('click', function() {
     $.ajax({
       type: 'POST',
       url: 'plugins/JeeRemi/core/ajax/JeeRemi.ajax.php',
       data: { action: 'syncRemi', PHPSESSID: '<?php echo session_id(); ?>' },
       dataType: 'json',
-      success: function(res){ showResult('<div class="alert alert-info">Synchronisation terminée. Vérifiez les équipements.</div>'); },
-      error: function(xhr){ showResult('<div class="alert alert-danger">Erreur synchro: '+xhr.responseText+'</div>'); console.log(xhr.responseText); }
-    });
-  });
-
-  // Charger liste REMI
-  function loadDetected() {
-    $('#JeeRemiDetectedTable').html('<i>Chargement...</i>');
-    $.ajax({
-      type:'POST',
-      url:'plugins/JeeRemi/core/ajax/JeeRemi.ajax.php',
-      data: { action:'listRemi', PHPSESSID: '<?php echo session_id(); ?>' },
-      dataType:'json',
-      success:function(res){
-        if (!res || !res.remis) {
-          $('#JeeRemiDetectedTable').html('<div class="alert alert-warning">Aucun REMI détecté ou erreur.</div>');
-          return;
-        }
-        var html = '<table class="table table-condensed"><thead><tr><th>Nom</th><th>ID</th></tr></thead><tbody>';
-        res.remis.forEach(function(r){
-          html += '<tr><td>'+ (r.name ? r.name : 'REMI') +'</td><td>'+r.objectId+'</td></tr>';
-        });
-        html += '</tbody></table>';
-        $('#JeeRemiDetectedTable').html(html);
+      success: function(res) {
+        showResult('<div class="alert alert-info">Synchronisation terminée. Vérifiez les équipements.</div>');
       },
-      error:function(xhr){
-        $('#JeeRemiDetectedTable').html('<div class="alert alert-danger">Erreur: '+xhr.responseText+'</div>');
-        console.log(xhr.responseText);
+      error: function(xhr) {
+        showResult('<div class="alert alert-danger">Erreur synchro: ' + xhr.responseText + '</div>');
       }
     });
-  }
-
-  // initial load
-  $('#JeeRemiRefreshDetected').on('click', loadDetected);
-  loadDetected();
-
+  });
 });
 </script>
