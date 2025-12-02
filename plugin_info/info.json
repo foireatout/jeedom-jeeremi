@@ -14,9 +14,13 @@
   "changelog": "https:\/\/github.com\/foireatout\/jeedom-jeeremi\/doc",
   "language": "fr_FR",
   "compatibility": [
-	"luna",
-	"rpi",
-	"docker",
-	"diy"
+		"miniplus",
+		"smart",
+		"rpi",
+		"docker",
+		"diy",
+		"mobile",
+		"v4",
+		"atlas"
 	]
 }
