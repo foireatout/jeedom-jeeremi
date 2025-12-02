@@ -12,7 +12,9 @@
   "hasDependency": true,
   "hasOwnDeamon": false,
   "changelog": "https:\/\/github.com\/foireatout\/jeedom-jeeremi\/doc",
-  "language": "fr_FR",
+  "language": [
+	  "fr_FR"
+  ], 
   "compatibility": [
 		"miniplus",
 		"smart",
