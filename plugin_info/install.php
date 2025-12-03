@@ -23,12 +23,10 @@ class JeeRemiInstall {
             $plugin->setState('dependencies', 'ok');
             $plugin->save();
 
-            // Solution plus robuste pour le rafraîchissement
             echo '<script>
                 if (window.location.href.includes("plugin.php")) {
                     window.location.reload();
                 } else {
-                    // Si on n'est pas sur la page du plugin, on redirige vers la page du plugin
                     window.location.href = "index.php?v=d&p=plugin&id=JeeRemi";
                 }
             </script>';

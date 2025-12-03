@@ -1,4 +1,8 @@
 #!/bin/bash
+echo "Installation dépendances système"
+apt-get update
+apt-get install -y python3 python3-venv python3-pip
+
 VENV="$(dirname "$0")/../resources/python_venv"
 echo "Création venv..."
 python3 -m venv "$VENV"
