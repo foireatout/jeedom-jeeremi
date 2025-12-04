@@ -16,7 +16,16 @@ class JeeRemiApi {
             return false;
         }
 
-		$python = '/usr/bin/python3';
+      $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
+      $system_python = '/usr/bin/python3';
+
+      if (file_exists($venv_python) && is_executable($venv_python)) {
+          $python = $venv_python;
+      } else {
+          log::add('JeeRemi', 'warning', 'Venv python not available or not executable. Using system python: ' . $system_python);
+          $python = $system_python;
+}
+
 
         
         // Construire la commande en échappant chaque argument
