@@ -1,23 +1,11 @@
 <?php
-if (!isConnect()) {
-    throw new Exception(__('401 - Accès non autorisé', __FILE__));
+//require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
+include_file('core', 'authentification', 'php');
+
+if (!isConnect('admin')) {
+        throw new Exception('{{401 - Accès non autorisé}}');
 }
 
-$venv_python = realpath(__DIR__ . '/../resources/python_venv/bin/python3');
-$dep_ok = false;
-if ($venv_python && file_exists($venv_python) && is_executable($venv_python)) {
-    $out = trim(shell_exec(escapeshellcmd($venv_python) . ' --version 2>&1'));
-    if ($out !== '') {
-        $dep_ok = true;
-    }
-}
-if (!$dep_ok) {
-    echo '<div class="alert alert-warning">
-            Les dépendances ne sont pas encore installées.<br>
-            Merci d\'aller sur l\'onglet <strong>Dépendances</strong> pour les installer.
-          </div>';
-    return;
-}
 ?>
 
 <div class="row">
