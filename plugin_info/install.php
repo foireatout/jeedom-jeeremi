@@ -1,54 +1,36 @@
 <?php
+
 class JeeRemiInstall {
+
     public static function postInstall() {
-        self::launchDep();
+        self::checkDependency();
     }
 
     public static function postUpdate() {
-        self::launchDep();
+        self::checkDependency();
     }
 
-    public static function launchDep() {
-        $plugin = plugin::byId('JeeRemi');
-        $plugin->setState('dependencies', 'nok');
-        $plugin->save();
-        jeedom::getPlugin('JeeRemi')->installDependancy();
-    }
-
-    public static function checkDependancy() {
-        $plugin = plugin::byId('JeeRemi');
+    public static function checkDependency() {
         $python = __DIR__ . '/../resources/python_venv/bin/python3';
-
+        
         if (file_exists($python) && is_executable($python)) {
-            $plugin->setState('dependencies', 'ok');
-            $plugin->save();
-
-            echo '<script>
-                if (window.location.href.includes("plugin.php")) {
-                    window.location.reload();
-                } else {
-                    window.location.href = "index.php?v=d&p=plugin&id=JeeRemi";
-                }
-            </script>';
+            plugin::byId('JeeRemi')->setState('dependencies', 'ok');
         } else {
-            $plugin->setState('dependencies', 'nok');
-            $plugin->save();
+            plugin::byId('JeeRemi')->setState('dependencies', 'nok');
         }
+        plugin::byId('JeeRemi')->save();
     }
 
     public static function dependancy_info() {
-        $return = [];
-        $return['log'] = 'JeeRemi_dep';
-        $return['progress_file'] = '/tmp/jeedom/JeeRemi/dependancy';
-        $return['state'] = self::checkPython();
-        return $return;
+        return [
+            'log' => 'JeeRemi_dep',
+            'progress_file' => '/tmp/jeedom/JeeRemi/dependancy',
+            'state' => plugin::byId('JeeRemi')->getState('dependencies') == 'ok'
+        ];
     }
 
-    private static function checkPython() {
-        $python = __DIR__ . '/../resources/python_venv/bin/python3';
-        if (file_exists($python) && is_executable($python)) {
-            return true;
-        }
-        return false;
+    public static function dependancy_install() {
+        // Laisse Jeedom gérer via packages.json
+        passthru('sudo /bin/bash ' . dirname(__FILE__) . '/../core/php/install.php');
     }
 }
