@@ -16,7 +16,11 @@ class JeeRemiApi {
             return false;
         }
 
-		$python = '/usr/bin/python3';
+		$python_venv = __DIR__ . '/../resources/python_venv/bin/python3';
+		$python = (file_exists($python_venv) && is_executable($python_venv)) ?
+           $python_venv :
+           '/usr/bin/python3';
+
         
         // Construire la commande en échappant chaque argument
         $cmdParts = array_merge([$python, $script], $args);
