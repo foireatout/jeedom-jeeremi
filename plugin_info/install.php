@@ -22,13 +22,13 @@ function JeeRemi_dependancy_info() {
     $venv_python = dirname(__FILE__) . '/../resources/python_venv/bin/python3';
     if (file_exists($venv_python) && is_executable($venv_python)) {
         return [
-            'log' => 'JeeRemi_dep',
+            'log' => 'JeeRemi_packages',
             'progress_file' => '/tmp/jeedom/JeeRemi/dependancy',
             'state' => true,
         ];
     } else {
         return [
-            'log' => 'JeeRemi_dep',
+            'log' => 'JeeRemi_packages',
             'progress_file' => '/tmp/jeedom/JeeRemi/dependancy',
             'state' => false,
         ];
@@ -49,6 +49,6 @@ function JeeRemi_remove_venv() {
     if (file_exists($venv_dir)) {
         log::add('JeeRemi', 'info', 'Suppression du dossier python_venv');
         $cmd = 'sudo rm -rf ' . escapeshellarg($venv_dir);
-        system($cmd . ' >> ' . log::getPathToLog('JeeRemi_dep') . ' 2>&1');
+        system($cmd . ' >> ' . log::getPathToLog('JeeRemi_packages') . ' 2>&1');
     }
 }
