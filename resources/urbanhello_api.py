@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/python_venv python3
 import requests
 import json
 import sys
