@@ -15,50 +15,45 @@ mkdir -p "$(dirname "$LOG")"
 echo "Start $PLUGIN dependency install" | tee -a "$LOG"
 echo 0 > "$PROGRESS_FILE"
 
-# 1) apt update
-echo "[1/5] apt update" | tee -a "$LOG"
-apt-get update -y >> "$LOG" 2>&1 || true
-echo 10 > "$PROGRESS_FILE"
+# 1) Installer les dépendances système
+echo "[1/4] Installation des dépendances système (python3, python3-venv, python3-pip)" | tee -a "$LOG"
+DEBIAN_FRONTEND=noninteractive apt-get update -y >> "$LOG" 2>&1
+DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv python3-pip >> "$LOG" 2>&1
+echo 20 > "$PROGRESS_FILE"
 
-# 2) install system packages
-echo "[2/5] install python3, python3-venv, python3-pip" | tee -a "$LOG"
-DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv python3-pip build-essential >> "$LOG" 2>&1
-echo 30 > "$PROGRESS_FILE"
-
-# 3) create venv (remove previous broken one)
-echo "[3/5] create python venv at ${VENV_DIR}" | tee -a "$LOG"
+# 2) Supprimer l'ancien venv s'il existe
+echo "[2/4] Suppression de l'ancien venv (si présent)" | tee -a "$LOG"
 if [ -d "${VENV_DIR}" ]; then
-  rm -rf "${VENV_DIR}" >> "$LOG" 2>&1 || true
+    rm -rf "${VENV_DIR}" >> "$LOG" 2>&1 || true
 fi
+
+# 3) Créer le venv
+echo "[3/4] Création du venv dans ${VENV_DIR}" | tee -a "$LOG"
 python3 -m venv "${VENV_DIR}" >> "$LOG" 2>&1
-# ensure python inside venv is executable
-if [ -x "${VENV_DIR}/bin/python3" ]; then
-  echo "venv python exists" >> "$LOG"
-else
-  echo "ERROR: venv python not found or not executable" >> "$LOG"
-  echo 5 > "$PROGRESS_FILE"
-  exit 1
+if [ ! -d "${VENV_DIR}" ]; then
+    echo "ERREUR : Impossible de créer le venv dans ${VENV_DIR}" | tee -a "$LOG"
+    echo 5 > "$PROGRESS_FILE"
+    exit 1
 fi
-echo 60 > "$PROGRESS_FILE"
 
-# 4) upgrade pip and install required python packages inside venv
-echo "[4/5] upgrade pip and install requests inside venv" | tee -a "$LOG"
-"${VENV_DIR}/bin/pip" install --upgrade pip setuptools wheel >> "$LOG" 2>&1
-"${VENV_DIR}/bin/pip" install --upgrade requests >> "$LOG" 2>&1
-echo 80 > "$PROGRESS_FILE"
+# 4) Installer requests dans le venv
+echo "[4/4] Installation de requests dans le venv" | tee -a "$LOG"
+"${VENV_DIR}/bin/pip" install --upgrade pip >> "$LOG" 2>&1
+"${VENV_DIR}/bin/pip" install requests >> "$LOG" 2>&1
 
-# 5) permissions & finalization
-echo "[5/5] set ownership to www-data" | tee -a "$LOG"
-chown -R www-data:www-data "${VENV_DIR}" >> "$LOG" 2>&1
-chmod -R 775 "${VENV_DIR}" >> "$LOG" 2>&1
+# 5) Vérifier que requests est bien installé
+if ! "${VENV_DIR}/bin/pip" show requests &> /dev/null; then
+    echo "ERREUR : Impossible d'installer requests dans le venv" | tee -a "$LOG"
+    echo 5 > "$PROGRESS_FILE"
+    exit 1
+fi
 
-# create progress marker (Jeedom expects 100)
+# 6) Définir les permissions
+echo "Définition des permissions pour ${VENV_DIR}" | tee -a "$LOG"
+chown -R www-data:www-data "${VENV_DIR}"
+chmod -R 775 "${VENV_DIR}"
+
+# 7) Marquer la fin de l'installation
 echo 100 > "$PROGRESS_FILE"
-
-# Tell Jeedom dependency finished (via jeecli) if available
-if command -v php >/dev/null 2>&1; then
-  php /var/www/html/core/php/jeecli.php plugin dependancy_end "${PLUGIN}" >> "$LOG" 2>&1 || true
-fi
-
-echo "End $PLUGIN dependency install" | tee -a "$LOG"
+echo "Fin de l'installation des dépendances pour $PLUGIN" | tee -a "$LOG"
 exit 0

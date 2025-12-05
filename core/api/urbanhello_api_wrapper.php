@@ -9,59 +9,52 @@ class JeeRemiApi {
      * Exécute le script Python avec les arguments fournis.
      * Retourne array (décodé JSON) ou false en cas d'erreur.
      */
-    private static function runPythonCommand(array $args) {
-        $script = self::scriptPath();
-        if ($script === false || !file_exists($script)) {
-            log::add('JeeRemi', 'error', 'urbanhello_api.py introuvable: ' . $script);
-            return false;
-        }
+private static function runPythonCommand(array $args) {
+    $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
+    if (!file_exists($venv_python) || !is_executable($venv_python)) {
+        log::add('JeeRemi', 'error', 'Venv Python non disponible : ' . $venv_python);
+        return false;
+    }
 
-      $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
-      $system_python = '/usr/bin/python3';
+    $script = self::scriptPath();
+    if ($script === false || !file_exists($script)) {
+        log::add('JeeRemi', 'error', 'urbanhello_api.py introuvable : ' . $script);
+        return false;
+    }
 
-      if (file_exists($venv_python) && is_executable($venv_python)) {
-          $python = $venv_python;
-      } else {
-          log::add('JeeRemi', 'warning', 'Venv python not available or not executable. Using system python: ' . $system_python);
-          $python = $system_python;
+    // Construire la commande avec le venv
+    $cmdParts = array_merge([$venv_python, $script], $args);
+    $cmdEscaped = '';
+    foreach ($cmdParts as $p) {
+        $cmdEscaped .= ' ' . escapeshellarg($p);
+    }
+    $cmdEscaped = trim($cmdEscaped);
+
+    log::add('JeeRemi', 'debug', 'Exécution de la commande : ' . $cmdEscaped);
+
+    $output = [];
+    $returnVar = 0;
+    exec($cmdEscaped . ' 2>&1', $output, $returnVar);
+    $outputText = implode("\n", $output);
+
+    if ($returnVar !== 0) {
+        log::add('JeeRemi', 'error', 'Erreur Python (rc=' . $returnVar . ') : ' . $outputText);
+        return false;
+    }
+
+    $trim = trim($outputText);
+    if ($trim === '') {
+        return [];
+    }
+
+    $json = json_decode($trim, true);
+    if (json_last_error() === JSON_ERROR_NONE) {
+        return $json;
+    }
+
+    return $trim;
 }
 
-
-        
-        // Construire la commande en échappant chaque argument
-        $cmdParts = array_merge([$python, $script], $args);
-        $cmdEscaped = '';
-        foreach ($cmdParts as $p) {
-            $cmdEscaped .= ' ' . escapeshellarg($p);
-        }
-        // on enlève l'espace initial
-        $cmdEscaped = trim($cmdEscaped);
-
-        // Log pour debug
-        log::add('JeeRemi', 'debug', 'CMD Python: ' . $cmdEscaped);
-
-        // Exec et récupération de la sortie
-        $output = [];
-        $returnVar = 0;
-        exec($cmdEscaped . ' 2>&1', $output, $returnVar);
-        $outputText = implode("\n", $output);
-
-        if ($returnVar !== 0) {
-            log::add('JeeRemi', 'error', 'Python rc=' . $returnVar . ' output=' . $outputText);
-            return false;
-        }
-
-        $trim = trim($outputText);
-        if ($trim === '') return [];
-
-        $json = json_decode($trim, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return $json;
-        }
-
-        // Si réponse non JSON, retourne la chaîne brute dans un tableau
-        return $trim;
-    }
 
     // --- Méthodes exposées au plugin ---
 
