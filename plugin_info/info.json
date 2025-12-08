@@ -21,7 +21,9 @@
   "hasDependency": true,
   "hasOwnDeamon": false,
   "documentation":"https://github.com/foireatout/jeedom-jeeremi/blob/stable/README.md",
+  "documentation_beta":"https://github.com/foireatout/jeedom-jeeremi/blob/beta/README.md",
   "changelog": "https://github.com/foireatout/jeedom-jeeremi/blob/stable/changelog.md",
+  "changelog_beta": "https://github.com/foireatout/jeedom-jeeremi/blob/beta/changelog.md",
   "language": [
 	  "fr_FR"
   ],
