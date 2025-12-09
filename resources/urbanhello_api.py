@@ -129,10 +129,6 @@ def get_temperature(session_token, remi_object_id):
     remi_info = get_remi_info(session_token, remi_object_id, "temp")
     return remi_info
 
-# ============================
-#  NOUVELLES FONCTIONS FACE
-# ============================
-
 FACE_MAP = {
     "sleepyFace": "rnAltoFwYC",
     "awakeFace": "fIjF0yWRxX",
@@ -192,9 +188,6 @@ def set_face_by_name(session_token, remi_object_id, face_name):
     response.raise_for_status()
     return response.json()
 
-# ============================
-#  MUSIQUE (NOUVELLES FONCTIONS)
-# ============================
 
 def play_music(session_token, remi_object_id, filename):
     url = f"{API_BASE_URL}/classes/Remi/{remi_object_id}"
@@ -226,9 +219,6 @@ def get_music_path(session_token, remi_object_id):
 def get_music_mode(session_token, remi_object_id):
     return get_remi_info(session_token, remi_object_id, "musicMode")
 
-# ============================
-#  DISPATCHER ARGUMENTS
-# ============================
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "login":
@@ -310,7 +300,6 @@ if __name__ == "__main__":
         value = sys.argv[6]
         print(json.dumps(modify_alarm(session_token, remi_id, index, field, value)))
 
-    # ===== MUSIQUE (DISPATCHER) =====
     elif sys.argv[1] == "play_music":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]

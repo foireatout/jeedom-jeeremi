@@ -5,10 +5,6 @@ class JeeRemiApi {
         return realpath(dirname(__FILE__) . '/../../resources/urbanhello_api.py');
     }
 
-    /**
-     * Exécute le script Python avec les arguments fournis.
-     * Retourne array (décodé JSON) ou false en cas d'erreur.
-     */
 private static function runPythonCommand(array $args) {
     $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
     if (!file_exists($venv_python) || !is_executable($venv_python)) {
@@ -54,9 +50,6 @@ private static function runPythonCommand(array $args) {
 
     return $trim;
 }
-
-
-    // --- Méthodes exposées au plugin ---
 
     public static function login($username, $password) {
         if ($username === null || $password === null) {
@@ -118,7 +111,6 @@ private static function runPythonCommand(array $args) {
         return self::runPythonCommand(['music_mode', $token, $remiId]);
     }
 
-    // utilitaires supplémentaires si nécessaires
     public static function getTemperature($token, $remiId) {
         return self::runPythonCommand(['get_temperature', $token, $remiId]);
     }

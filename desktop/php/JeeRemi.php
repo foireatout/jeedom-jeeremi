@@ -51,70 +51,87 @@ $eqLogics = eqLogic::byType($plugin->getId());
             <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
             <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
         </ul>
-        <div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x: hidden;">
-            <div role="tabpanel" class="tab-pane active" id="eqlogictab">
-                <form class="form-horizontal">
-                    <fieldset>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">{{Nom de l'équipement}}</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
-                                <input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement}}" />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">{{Objet parent}}</label>
-                            <div class="col-sm-6">
-                                <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
-                                    <option value="">{{Aucun}}</option>
-                                    <?php
-                                    $options = '';
-                                    foreach ((jeeObject::buildTree(null, false)) as $object) {
-                                        $options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
-                                    }
-                                    echo $options;
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label">{{Catégorie}}</label>
-                            <div class="col-sm-8">
-                                <?php
-                                foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
-                                    echo '<label class="checkbox-inline">';
-                                    echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
-                                    echo '</label>';
-                                }
-                                ?>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-4 control-label"></label>
-                            <div class="col-sm-6">
-                                <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked />{{Activer}}</label>
-                                <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked />{{Visible}}</label>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-            <div role="tabpanel" class="tab-pane" id="commandtab">
-                <a class="btn btn-info btn-sm pull-right" id="refreshEquipment" style="margin-top:5px;"><i class="fas fa-sync"></i> Rafraîchir</a>
-                <br /><br />
-                <table id="table_cmd" class="table table-bordered table-condensed">
-                    <thead>
-                        <tr>
-                            <th style="min-width:200px;width:350px;">{{Nom}}</th>
-                            <th>{{Type}}</th>
-                            <th style="width:260px;">{{Options}}</th>
-                            <th>{{Actions}}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
+
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="eqlogictab">
+				<!-- <div class="row">
+				<div class="col-sm-6"> -->
+				<form class="form-horizontal">
+					<fieldset>
+						<div class="col-lg-6">
+							<legend><i class="fas fa-wrench"></i> {{Paramètres généraux}}</legend>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Nom de l'équipement}}</label>
+								<div class="col-sm-6">
+									<input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
+									<input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement}}" />
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Objet parent}}</label>
+								<div class="col-sm-6">
+									<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
+										<option value="">{{Aucun}}</option>
+										<?php
+										$options = '';
+										foreach ((jeeObject::buildTree(null, false)) as $object) {
+											$options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
+										}
+										echo $options;
+										?>
+									</select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Catégorie}}</label>
+								<div class="col-sm-6">
+									<?php
+									foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
+										echo '<label class="checkbox-inline">';
+										echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
+										echo '</label>';
+									}
+									?>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Options}}</label>
+								<div class="col-sm-6">
+									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked />{{Activer}}</label>
+									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked />{{Visible}}</label>
+								</div>
+							</div>
+							
+						</div>
+
+				
+
+					</fieldset>
+				</form>
+				<hr>
+			</div>
+            
+          <div role="tabpanel" class="tab-pane" id="commandtab">
+				<br />
+				<div class="table-responsive">
+					<table id="table_cmd" class="table table-bordered table-condensed">
+						<thead>
+							<tr>
+								<th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
+								<th style="width:450px;">{{Nom}}</th>
+								<th style="width:150px;">{{Type}}</th>
+								<th style="min-width:350px">{{Logical ID}}</th>
+								<th>{{Options}}</th>
+								<th>{{Valeur}}</th>
+								<th>{{Action}}</th>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+            
         </div>
     </div>
 </div>

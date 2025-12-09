@@ -186,7 +186,6 @@ class JeeRemi extends eqLogic {
             }
         }
 
-        // Mise à jour du nom de l'équipement si le nom est récupéré
         if (isset($info['name'])) {
             $this->setName($info['name']);
             $this->save();
