@@ -5,6 +5,7 @@ function addCmdToTable(_cmd) {
   if (!isset(_cmd.configuration)) {
     _cmd.configuration = {};
   }
+
   var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
   tr += '<td class="hidden-xs">'
   tr += '<span class="cmdAttr" data-l1key="id"></span>'
@@ -41,10 +42,12 @@ function addCmdToTable(_cmd) {
   tr += '<td>';
   tr += '<i class="fas fa-minus-circle pull-right cmdAction cursor" data-action="remove" title="{{Supprimer la commande}}"></i>';
   tr += '</td>';
- tr += '</tr>';
+  tr += '</tr>';
+
   $('#table_cmd tbody').append(tr);
+
   var tr = $('#table_cmd tbody tr').last();
- 
+
   jeedom.eqLogic.buildSelectCmd({
     id:  $('.eqLogicAttr[data-l1key=id]').value(),
     filter: {type: 'info'},
@@ -58,3 +61,31 @@ function addCmdToTable(_cmd) {
     }
   });
 }
+
+
+
+/* ---------------------------------------------------------
+   TRI PAR ID – Version fiable (après chargement complet)
+--------------------------------------------------------- */
+
+$(document).ready(function() {
+
+    // On attend 300 ms pour laisser Jeedom remplir les ID
+    setTimeout(function() {
+
+        var tbody = $('#table_cmd tbody');
+        var rows = tbody.children('tr').get();
+
+        rows.sort(function(a, b) {
+            var idA = parseInt($(a).find('.cmdAttr[data-l1key="id"]').text()) || 0;
+            var idB = parseInt($(b).find('.cmdAttr[data-l1key="id"]').text()) || 0;
+            return idA - idB;
+        });
+
+        $.each(rows, function(idx, row) {
+            tbody.append(row);
+        });
+
+    }, 300);
+
+});
