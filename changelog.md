@@ -1,3 +1,6 @@
+#1.1.1 (11/12/2025)
+Correction: mauvais format de données sur certains nouveaux champs.
+
 #1.1 (11/12/2025)
 Ajout des commandes:
 - background_color

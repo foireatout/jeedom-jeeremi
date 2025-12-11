@@ -78,10 +78,10 @@ class JeeRemi extends eqLogic {
             ['play_music', 'action', 'message', 'Démarrer musique', ['template' => '{{message}}']],
             ['stop_music', 'action', 'other', 'Arrêter musique', []],
             ['refresh', 'action', 'other', 'Rafraîchir', []],
-            ['background_color', 'info', 'other', 'Couleur de fond', []],
+            ['background_color', 'info', 'string', 'Couleur de fond', []],
             ['firmware_version', 'info', 'numeric', 'Version du firmware', []],
             ['firmware_need_update', 'info', 'binary', 'Mise à jour firmware nécessaire', []],
-            ['Remi_unique_ID', 'info', 'other', 'ID unique du REMI', []]
+            ['Remi_unique_ID', 'info', 'string', 'ID unique du REMI', []]
         ];
         foreach ($cmds as $c) {
             list($logical, $type, $subtype, $name, $opts) = $c;
