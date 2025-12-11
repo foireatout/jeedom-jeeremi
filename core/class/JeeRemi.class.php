@@ -6,10 +6,8 @@ class JeeRemi extends eqLogic {
 
     public static function syncRemi() {
         log::add('JeeRemi', 'debug', 'Lancement de syncRemi()');
-
         $sessionToken = config::byKey('sessionToken', 'JeeRemi', '');
         $userId = config::byKey('userId', 'JeeRemi', '');
-
         if ($sessionToken == '' || $userId == '') {
             $username = config::byKey('username', 'JeeRemi', '');
             $password = config::byKey('password', 'JeeRemi', '');
@@ -27,17 +25,14 @@ class JeeRemi extends eqLogic {
             $sessionToken = $login['sessionToken'];
             $userId = $login['objectId'];
         }
-
         $userInfo = JeeRemiApi::userInfo($sessionToken, $userId);
         if (!is_array($userInfo) || !isset($userInfo['remis'])) {
             log::add('JeeRemi', 'error', 'Aucun REMI trouvé dans userInfo');
             return;
         }
-
         foreach ($userInfo['remis'] as $remi) {
             $remiId = is_array($remi) && isset($remi['objectId']) ? $remi['objectId'] : $remi;
             log::add('JeeRemi', 'debug', 'Traitement du REMI ID: ' . $remiId);
-
             $eq = eqLogic::byLogicalId($remiId, 'JeeRemi');
             if (!is_object($eq)) {
                 $eq = new JeeRemi();
@@ -59,7 +54,6 @@ class JeeRemi extends eqLogic {
 
     public function createCommands() {
         log::add('JeeRemi', 'debug', 'Création des commandes pour équipement: ' . $this->getLogicalId());
-
         $cmds = [
             ['set_veilleuse', 'action', 'slider', 'Régler luminosité', ['min' => 0, 'max' => 100, 'unit' => '%']],
             ['veilleuse', 'info', 'numeric', 'Luminosité', ['unit' => '%']],
@@ -83,12 +77,14 @@ class JeeRemi extends eqLogic {
             ['blankFace', 'action', 'other', 'Visage blanc', []],
             ['play_music', 'action', 'message', 'Démarrer musique', ['template' => '{{message}}']],
             ['stop_music', 'action', 'other', 'Arrêter musique', []],
-            ['refresh', 'action', 'other', 'Rafraîchir', []]
+            ['refresh', 'action', 'other', 'Rafraîchir', []],
+            ['background_color', 'info', 'other', 'Couleur de fond', []],
+            ['firmware_version', 'info', 'numeric', 'Version du firmware', []],
+            ['firmware_need_update', 'info', 'binary', 'Mise à jour firmware nécessaire', []],
+            ['Remi_unique_ID', 'info', 'other', 'ID unique du REMI', []]
         ];
-
         foreach ($cmds as $c) {
             list($logical, $type, $subtype, $name, $opts) = $c;
-
             if (!is_object($this->getCmd(null, $logical))) {
                 $cmd = new JeeRemiCmd();
                 $cmd->setName($name);
@@ -96,12 +92,10 @@ class JeeRemi extends eqLogic {
                 $cmd->setLogicalId($logical);
                 $cmd->setType($type);
                 $cmd->setSubType($subtype);
-
                 if (isset($opts['min'])) $cmd->setConfiguration('minValue', $opts['min']);
                 if (isset($opts['max'])) $cmd->setConfiguration('maxValue', $opts['max']);
                 if (isset($opts['unit'])) $cmd->setUnite($opts['unit']);
                 if ($subtype == 'message' && isset($opts['template'])) $cmd->setConfiguration('template', $opts['template']);
-
                 $cmd->save();
                 log::add('JeeRemi', 'debug', 'Création commande ' . $logical);
             }
@@ -116,30 +110,43 @@ class JeeRemi extends eqLogic {
 
     public function updateInfos() {
         log::add('JeeRemi', 'debug', 'Mise à jour des infos pour REMI: ' . $this->getLogicalId());
-
         $username = config::byKey('username', 'JeeRemi', '');
         $password = config::byKey('password', 'JeeRemi', '');
-
         if ($username == '' || $password == '') {
             log::add('JeeRemi', 'debug', 'Plugin non configuré');
             return;
         }
-
         $login = JeeRemiApi::login($username, $password);
         if (!is_array($login) || !isset($login['sessionToken'])) {
             log::add('JeeRemi', 'debug', 'Login API échoué');
             return;
         }
-
         $token = $login['sessionToken'];
         $id = $this->getLogicalId();
-
         $info = JeeRemiApi::remiInfo($token, $id);
         if (!is_array($info)) {
             log::add('JeeRemi', 'debug', 'remiInfo non array pour ' . $id);
             return;
         }
 
+        // Mapping des couleurs
+        $colorMap = [
+            '62,177,200' => 'blue',
+            '255,115,120' => 'pink',
+            '254,219,0' => 'yellow',
+            '205,205,205' => 'grey'
+        ];
+
+        // Récupération de background_color
+        $bgColor = '62,177,20'; // Valeur par défaut : blue
+      
+        if (isset($info['background_color']) && is_array($info['background_color']) && count($info['background_color']) == 3) {
+            $bgColor = implode(',', $info['background_color']);
+        }
+
+        $backgroundColor = $colorMap[$bgColor] ?? 'blue'; // Valeur par défaut : blue
+
+        // Mise à jour des commandes
         $map = [
             'luminosity' => 'veilleuse',
             'facenum' => 'Visage_num',
@@ -153,15 +160,18 @@ class JeeRemi extends eqLogic {
             'rssi' => 'RSSI',
             'face' => 'face',
             'musicPath' => 'MusicPath',
-            'musicMode' => 'MusicMode'
+            'musicMode' => 'MusicMode',
+            'background_color' => 'background_color',
+            'update_firmware_version' => 'firmware_version',
+            'firmware_need_update' => 'firmware_need_update',
+            'uniqueID' => 'Remi_unique_ID'
         ];
 
         foreach ($map as $k => $cmdName) {
-            if (isset($info[$k])) {
-                $cmd = $this->getCmd(null, $cmdName);
-                if (is_object($cmd)) {
+            $cmd = $this->getCmd(null, $cmdName);
+            if (is_object($cmd)) {
+                if (isset($info[$k])) {
                     $val = $info[$k];
-
                     if ($k === 'face') {
                         $faceName = JeeRemiApi::getFace($token, $id);
                         $cmd->event($faceName);
@@ -178,14 +188,21 @@ class JeeRemi extends eqLogic {
                     } elseif ($k === 'temp') {
                         $val = round($val * 0.128);
                         $cmd->event($val);
+                    } elseif ($k === 'background_color') {
+                        $cmd->event($backgroundColor);
                     } else {
                         $cmd->event($val);
                     }
                     log::add('JeeRemi', 'debug', 'Mise à jour de la commande ' . $cmdName . ' avec la valeur ' . $val);
+                } else {
+                    log::add('JeeRemi', 'debug', 'Champ "' . $k . '" manquant dans la réponse API pour ' . $id);
                 }
+            } else {
+                log::add('JeeRemi', 'debug', 'Commande "' . $cmdName . '" non trouvée pour ' . $this->getLogicalId());
             }
         }
 
+        // Mise à jour du nom de l'équipement
         if (isset($info['name'])) {
             $this->setName($info['name']);
             $this->save();
@@ -204,3 +221,4 @@ class JeeRemi extends eqLogic {
         }
     }
 }
+?>

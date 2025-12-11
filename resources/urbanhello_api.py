@@ -128,7 +128,24 @@ def get_alarms(session_token, remi_object_id):
 def get_temperature(session_token, remi_object_id):
     remi_info = get_remi_info(session_token, remi_object_id, "temp")
     return remi_info
+    
+def get_backgroundcolor(session_token, remi_object_id):
+    remi_info = get_remi_info(session_token, remi_object_id)
+    return remi_info.get("background_color", [])
 
+def get_firmwareversion(session_token, remi_object_id):
+    remi_info = get_remi_info(session_token, remi_object_id)
+    return remi_info.get("update_firmware_version", "0.0.0")
+
+def get_firmwareneedupdate(session_token, remi_object_id):
+    remi_info = get_remi_info(session_token, remi_object_id)
+    return remi_info.get("firmware_need_update", False)
+
+def get_uniqueid(session_token, remi_object_id):
+    remi_info = get_remi_info(session_token, remi_object_id)
+    return remi_info.get("uniqueID", "")
+ 
+    
 FACE_MAP = {
     "sleepyFace": "rnAltoFwYC",
     "awakeFace": "fIjF0yWRxX",
@@ -220,78 +237,89 @@ def get_music_mode(session_token, remi_object_id):
     return get_remi_info(session_token, remi_object_id, "musicMode")
 
 
+# ... (le reste du code reste inchangé)
+
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "login":
         username = sys.argv[2]
         password = sys.argv[3]
         result = login(username, password)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "user_info":
         session_token = sys.argv[2]
         user_object_id = sys.argv[3]
         attribute = sys.argv[4] if len(sys.argv) > 4 else None
         result = get_user_info(session_token, user_object_id, attribute)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "remi_info":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         attribute = sys.argv[4] if len(sys.argv) > 4 else None
         result = get_remi_info(session_token, remi_object_id, attribute)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "set_luminosity":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         level = int(sys.argv[4])
         result = set_remi_luminosity(session_token, remi_object_id, level)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "set_volume":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         level = int(sys.argv[4])
         result = set_remi_volume(session_token, remi_object_id, level)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "set_face_expression":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         expression = sys.argv[4]
         result = set_face_expression(session_token, remi_object_id, expression)
         print(json.dumps(result))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "get_alarms":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         alarms = get_alarms(session_token, remi_object_id)
         print(json.dumps(alarms))
-
     elif len(sys.argv) > 1 and sys.argv[1] == "get_temperature":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         temp = get_temperature(session_token, remi_object_id)
         print(f"Température: {temp}")
-
     elif len(sys.argv) > 1 and sys.argv[1] == "get_face":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         result = get_current_face(session_token, remi_object_id)
         print(result)
-
     elif len(sys.argv) > 1 and sys.argv[1] == "set_face":
         session_token = sys.argv[2]
         remi_object_id = sys.argv[3]
         face_name = sys.argv[4]
         result = set_face_by_name(session_token, remi_object_id, face_name)
         print(json.dumps(result))
-
+    elif len(sys.argv) > 1 and sys.argv[1] == "get_backgroundcolor":
+        session_token = sys.argv[2]
+        remi_object_id = sys.argv[3]
+        backgroundcolor = get_backgroundcolor(session_token, remi_object_id)
+        print(json.dumps(backgroundcolor))
+    elif len(sys.argv) > 1 and sys.argv[1] == "get_firmwareversion":
+        session_token = sys.argv[2]
+        remi_object_id = sys.argv[3]
+        firmwareversion = get_firmwareversion(session_token, remi_object_id)
+        print(json.dumps(firmwareversion))
+    elif len(sys.argv) > 1 and sys.argv[1] == "get_firmwareneedupdate":
+        session_token = sys.argv[2]
+        remi_object_id = sys.argv[3]
+        firmwareneedupdate = get_firmwareneedupdate(session_token, remi_object_id)
+        print(json.dumps(firmwareneedupdate))
+    elif len(sys.argv) > 1 and sys.argv[1] == "get_uniqueid":
+        session_token = sys.argv[2]
+        remi_object_id = sys.argv[3]
+        uniqueid = get_uniqueid(session_token, remi_object_id)
+        print(json.dumps(uniqueid))
     elif sys.argv[1] == "alarms":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
         print(json.dumps(list_alarms(session_token, remi_id)))
-
     elif sys.argv[1] == "set_alarm":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
@@ -299,27 +327,22 @@ if __name__ == "__main__":
         field = sys.argv[5]
         value = sys.argv[6]
         print(json.dumps(modify_alarm(session_token, remi_id, index, field, value)))
-
     elif sys.argv[1] == "play_music":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
         filename = sys.argv[4]
         print(json.dumps(play_music(session_token, remi_id, filename)))
-
     elif sys.argv[1] == "stop_music":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
         print(json.dumps(stop_music(session_token, remi_id)))
-
     elif sys.argv[1] == "music_path":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
         print(get_music_path(session_token, remi_id))
-
     elif sys.argv[1] == "music_mode":
         session_token = sys.argv[2]
         remi_id = sys.argv[3]
         print(get_music_mode(session_token, remi_id))
-
     else:
         print("Usage: urbanhello_api.py [...]")

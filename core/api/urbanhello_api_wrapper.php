@@ -118,5 +118,22 @@ private static function runPythonCommand(array $args) {
     public static function getFace($token, $remiId) {
         return self::runPythonCommand(['get_face', $token, $remiId]);
     }
+  
+      public static function getBackgroundColor($token, $remiId) {
+        return self::runPythonCommand(['get_backgroundcolor', $token, $remiId]);
+    }
+
+    public static function getFirmwareVersion($token, $remiId) {
+        return self::runPythonCommand(['get_firmwareversion', $token, $remiId]);
+    }
+
+    public static function getFirmwareNeedUpdate($token, $remiId) {
+        return self::runPythonCommand(['get_firmwareneedupdate', $token, $remiId]);
+    }
+
+    public static function getUniqueID($token, $remiId) {
+        return self::runPythonCommand(['get_uniqueid', $token, $remiId]);
+}
+
 
 }

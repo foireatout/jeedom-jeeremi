@@ -6,7 +6,6 @@ $plugin = plugin::byId('JeeRemi');
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
 ?>
-
 <div class="row row-overflow">
     <div class="col-xs-12 eqLogicThumbnailDisplay">
         <legend><i class="fas fa-clock"></i> {{Mes REMI}}</legend>
@@ -24,19 +23,29 @@ $eqLogics = eqLogic::byType($plugin->getId());
             echo '<div class="eqLogicThumbnailContainer">';
             foreach ($eqLogics as $eqLogic) {
                 $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
+                $bgColorCmd = $eqLogic->getCmd(null, 'background_color');
+                $validColors = ['blue', 'pink', 'yellow', 'grey'];
+                $bgColorValue = 'blue';
+                if (is_object($bgColorCmd)) {
+                    $cmdValue = $bgColorCmd->execCmd();
+                    if (in_array($cmdValue, $validColors)) {
+                        $bgColorValue = $cmdValue;
+                    } else {
+                        log::add('JeeRemi', 'warning', 'Valeur invalide pour background_color (' . $cmdValue . ') pour l\'équipement ' . $eqLogic->getName() . '. Utilisation de "blue" par défaut.');
+                    }
+                }
+                $iconPath = 'plugins/JeeRemi/plugin_info/img/' . $bgColorValue . '.png';
                 echo '<div class="eqLogicDisplayCard cursor ' . $opacity . '" data-eqLogic_id="' . $eqLogic->getId() . '">';
-                echo '<img src="' . $plugin->getPathImgIcon() . '">';
+                echo '<img src="' . $iconPath . '" style="height:48px;"/>';
                 echo '<br>';
                 echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
-                echo '<span class="hiddenAsCard displayTableRight hidden">';
-                echo ($eqLogic->getIsVisible() == 1) ? '<i class="fas fa-eye" title="{{Equipement visible}}"></i>' : '<i class="fas fa-eye-slash" title="{{Equipement non visible}}"></i>';
-                echo '</span>';
                 echo '</div>';
             }
             echo '</div>';
         }
         ?>
     </div>
+
     <div class="col-xs-12 eqLogic" style="display: none;">
         <div class="input-group pull-right" style="display:inline-flex">
             <span class="input-group-btn">
@@ -46,92 +55,86 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <a class="btn btn-danger btn-sm eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}</a>
             </span>
         </div>
+
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation"><a href="" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
             <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
             <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
         </ul>
 
-		<div class="tab-content">
-			<div role="tabpanel" class="tab-pane active" id="eqlogictab">
-				<!-- <div class="row">
-				<div class="col-sm-6"> -->
-				<form class="form-horizontal">
-					<fieldset>
-						<div class="col-lg-6">
-							<legend><i class="fas fa-wrench"></i> {{Paramètres généraux}}</legend>
-							<div class="form-group">
-								<label class="col-sm-4 control-label">{{Nom de l'équipement}}</label>
-								<div class="col-sm-6">
-									<input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display : none;" />
-									<input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement}}" />
-								</div>
-							</div>
-							<div class="form-group">
-								<label class="col-sm-4 control-label">{{Objet parent}}</label>
-								<div class="col-sm-6">
-									<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
-										<option value="">{{Aucun}}</option>
-										<?php
-										$options = '';
-										foreach ((jeeObject::buildTree(null, false)) as $object) {
-											$options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
-										}
-										echo $options;
-										?>
-									</select>
-								</div>
-							</div>
-							<div class="form-group">
-								<label class="col-sm-4 control-label">{{Catégorie}}</label>
-								<div class="col-sm-6">
-									<?php
-									foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
-										echo '<label class="checkbox-inline">';
-										echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
-										echo '</label>';
-									}
-									?>
-								</div>
-							</div>
-							<div class="form-group">
-								<label class="col-sm-4 control-label">{{Options}}</label>
-								<div class="col-sm-6">
-									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked />{{Activer}}</label>
-									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked />{{Visible}}</label>
-								</div>
-							</div>
-							
-						</div>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="eqlogictab">
+                <form class="form-horizontal">
+                    <fieldset>
+                        <div class="col-lg-6">
+                            <legend><i class="fas fa-wrench"></i> {{Paramètres généraux}}</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{{Nom de l'équipement}}</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="eqLogicAttr form-control" data-l1key="id" style="display: none;" />
+                                    <input type="text" class="eqLogicAttr form-control" data-l1key="name" placeholder="{{Nom de l'équipement}}" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{{Objet parent}}</label>
+                                <div class="col-sm-6">
+                                    <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
+                                        <option value="">{{Aucun}}</option>
+                                        <?php
+                                        $options = '';
+                                        foreach ((jeeObject::buildTree(null, false)) as $object) {
+                                            $options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
+                                        }
+                                        echo $options;
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{{Catégorie}}</label>
+                                <div class="col-sm-6">
+                                    <?php
+                                    foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
+                                        echo '<label class="checkbox-inline">';
+                                        echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
+                                        echo '</label>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{{Options}}</label>
+                                <div class="col-sm-6">
+                                    <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked />{{Activer}}</label>
+                                    <label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked />{{Visible}}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                <hr>
+            </div>
 
-				
-
-					</fieldset>
-				</form>
-				<hr>
-			</div>
-            
-          <div role="tabpanel" class="tab-pane" id="commandtab">
-				<br />
-				<div class="table-responsive">
-					<table id="table_cmd" class="table table-bordered table-condensed">
-						<thead>
-							<tr>
-								<th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
-								<th style="width:450px;">{{Nom}}</th>
-								<th style="width:150px;">{{Type}}</th>
-								<th style="min-width:350px">{{Logical ID}}</th>
-								<th>{{Options}}</th>
-								<th>{{Valeur}}</th>
-								<th>{{Action}}</th>
-							</tr>
-						</thead>
-						<tbody>
-						</tbody>
-					</table>
-				</div>
-			</div>
-            
+            <div role="tabpanel" class="tab-pane" id="commandtab">
+                <br />
+                <div class="table-responsive">
+                    <table id="table_cmd" class="table table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
+                                <th style="width:450px;">{{Nom}}</th>
+                                <th style="width:150px;">{{Type}}</th>
+                                <th style="min-width:350px">{{Logical ID}}</th>
+                                <th>{{Options}}</th>
+                                <th>{{Valeur}}</th>
+                                <th>{{Action}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

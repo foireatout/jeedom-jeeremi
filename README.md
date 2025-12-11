@@ -10,6 +10,7 @@ Avec ce plugin, vous pouvez :
 - **Lancer/arrêter la musique** stockée sur l'appareil.
 - **Surveiller la température** de la pièce.
 - **Vérifier l'état en ligne** du réveil.
+- **Voir les informations diverses** remontées par le réveil.
 - **Rafraîchir manuellement** les informations.
 
 Le plugin utilise l'API officielle d'UrbanHello pour interagir avec vos appareils REMI.
@@ -23,7 +24,7 @@ Une fois le plugin installé depuis le market Jeedom:
 - Renseignez vos identifiants UrbanHello et de cliquer sur "Synchroniser"
 > Le plugin va se connecter à UrbanHello et créer un équipement par Réveil REMI qu'il trouvera sur ce compte.
 
-Vos équipements se trouvent créer dans Plugins > Communication > JeeRemi et portent le nom du Réveil.
+Vos équipements se trouvent créer dans Plugins > Communication > JeeRemi et portent le nom du Réveil et sa couleur paramétrée dans l'application.
 
 ---
 
@@ -53,3 +54,7 @@ Les informations suivantes sont disponibles pour chaque équipement REMI :
 - sleepyFace (action) : Défini "Visage Endormi/Fermé" comme visage affiché.
 - semiAwakeFace (action) : Défini "Visage SemiReveillé/SemiOuver" (cligne d'un oeil) comme visage affiché.
 - blankFace (action) : Défini un "Visage vide" comme visage affiché.
+- background_color (info / other) : Couleur du REMI paramétré sur l'application
+- Remi_unique_ID (info / other) : ID unique de REMI dans l'API
+- firmware_need_update (info / binary) : Indicateur boolean si une mise à jour est disponible
+- firmware_version (info / numeric) : Numero du firmware
