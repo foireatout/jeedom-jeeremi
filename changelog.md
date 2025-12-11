@@ -1,3 +1,7 @@
+# 1.1.3 (11/12/2025)
+Correction: L'équipement était renommé à chaque synchro.
+Il peut désormais être renommé sans que ce soit écrasé.
+
 # 1.1.2 (11/12/2025)
 Correction: mauvais format de données sur certains nouveaux champs.
 Modification de l'affichage des équipements sur la page du plugin.

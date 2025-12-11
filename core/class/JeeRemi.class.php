@@ -52,6 +52,7 @@ class JeeRemi extends eqLogic {
         log::add('JeeRemi', 'debug', 'syncRemi terminé');
     }
 
+
     public function createCommands() {
         log::add('JeeRemi', 'debug', 'Création des commandes pour équipement: ' . $this->getLogicalId());
         $cmds = [
@@ -139,12 +140,10 @@ class JeeRemi extends eqLogic {
         ];
 
         // Récupération de background_color
-        $bgColor = '62,177,20'; // Valeur par défaut : blue
-      
+        $bgColor = '205,205,205'; // Valeur par défaut : grey
         if (isset($info['background_color']) && is_array($info['background_color']) && count($info['background_color']) == 3) {
             $bgColor = implode(',', $info['background_color']);
         }
-
         $backgroundColor = $colorMap[$bgColor] ?? 'blue'; // Valeur par défaut : blue
 
         // Mise à jour des commandes
@@ -203,8 +202,8 @@ class JeeRemi extends eqLogic {
             }
         }
 
-        // Mise à jour du nom de l'équipement
-        if (isset($info['name'])) {
+        // Mise à jour du nom de l'équipement uniquement si le nom actuel est "REMI ID"
+        if (isset($info['name']) && strpos($this->getName(), 'REMI ' . $id) === 0) {
             $this->setName($info['name']);
             $this->save();
         }
@@ -221,5 +220,6 @@ class JeeRemi extends eqLogic {
             $lastUpdateCmd->event(date('d-m-Y H:i:s'));
         }
     }
+
 }
 ?>
