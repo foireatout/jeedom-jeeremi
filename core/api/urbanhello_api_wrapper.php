@@ -5,55 +5,73 @@ class JeeRemiApi {
         return realpath(dirname(__FILE__) . '/../../resources/urbanhello_api.py');
     }
 
-private static function runPythonCommand(array $args) {
-    $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
-    if (!file_exists($venv_python) || !is_executable($venv_python)) {
-        log::add('JeeRemi', 'error', 'Venv Python non disponible : ' . $venv_python);
-        return false;
+    private static function runPythonCommand(array $args) {
+
+        $venv_python = __DIR__ . '/../../resources/python_venv/bin/python3';
+        if (!file_exists($venv_python) || !is_executable($venv_python)) {
+            log::add('JeeRemi', 'error', 'JeeRemi: API non disponible');
+            log::add('JeeRemi', 'info', 'ERROR: Erreur de communication avec l\'API UrbanHello.');
+            log::add('JeeRemi', 'debug', 'Venv Python non disponible : ' . $venv_python);
+            return false;
+        }
+
+        $script = self::scriptPath();
+        if ($script === false || !file_exists($script)) {
+            log::add('JeeRemi', 'error', 'JeeRemi: API non disponible');
+            log::add('JeeRemi', 'info', 'ERROR: Erreur de communication avec l\'API UrbanHello.');
+            log::add('JeeRemi', 'debug', 'urbanhello_api.py introuvable');
+            return false;
+        }
+
+        $cmdParts = array_merge([$venv_python, $script], $args);
+        $cmdEscaped = '';
+        foreach ($cmdParts as $p) {
+            $cmdEscaped .= ' ' . escapeshellarg($p);
+        }
+        $cmdEscaped = trim($cmdEscaped);
+
+        log::add('JeeRemi', 'debug', 'Exécution commande Python : ' . $cmdEscaped);
+
+        $output = [];
+        $returnVar = 0;
+        exec($cmdEscaped . ' 2>&1', $output, $returnVar);
+        $outputText = trim(implode("\n", $output));
+        
+        if ($returnVar !== 0) {
+
+            log::add('JeeRemi', 'error', 'JeeRemi: API non disponible');
+
+            log::add(
+                'JeeRemi',
+                'info',
+                'ERROR: Erreur de communication avec l\'API UrbanHello.'
+            );
+
+            log::add(
+                'JeeRemi',
+                'debug',
+                'Erreur Python (rc=' . $returnVar . ') : ' . $outputText
+            );
+
+            return false;
+        }
+
+        log::add('JeeRemi', 'debug', 'OK: Connexion à l\'API réussie');
+
+        if ($outputText === '') {
+            return [];
+        }
+
+        $json = json_decode($outputText, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+
+        return $outputText;
     }
 
-    $script = self::scriptPath();
-    if ($script === false || !file_exists($script)) {
-        log::add('JeeRemi', 'error', 'urbanhello_api.py introuvable : ' . $script);
-        return false;
-    }
-
-    // Construire la commande avec le venv
-    $cmdParts = array_merge([$venv_python, $script], $args);
-    $cmdEscaped = '';
-    foreach ($cmdParts as $p) {
-        $cmdEscaped .= ' ' . escapeshellarg($p);
-    }
-    $cmdEscaped = trim($cmdEscaped);
-
-    log::add('JeeRemi', 'debug', 'Exécution de la commande : ' . $cmdEscaped);
-
-    $output = [];
-    $returnVar = 0;
-    exec($cmdEscaped . ' 2>&1', $output, $returnVar);
-    $outputText = implode("\n", $output);
-
-    if ($returnVar !== 0) {
-        log::add('JeeRemi', 'error', 'Erreur Python (rc=' . $returnVar . ') : ' . $outputText);
-        return false;
-    }
-
-    $trim = trim($outputText);
-    if ($trim === '') {
-        return [];
-    }
-
-    $json = json_decode($trim, true);
-    if (json_last_error() === JSON_ERROR_NONE) {
-        return $json;
-    }
-
-    return $trim;
-}
-
-    public static function login($username, $password) {
+  	public static function login($username, $password) {
         if ($username === null || $password === null) {
-            log::add('JeeRemi', 'error', 'login: paramètres vides');
             return false;
         }
         return self::runPythonCommand(['login', $username, $password]);
@@ -61,7 +79,6 @@ private static function runPythonCommand(array $args) {
 
     public static function userInfo($token, $userObjectId, $attribute = null) {
         if ($token === null || $userObjectId === null) {
-            log::add('JeeRemi', 'error', 'userInfo: paramètres vides');
             return false;
         }
         $args = ['user_info', $token, $userObjectId];
@@ -71,16 +88,11 @@ private static function runPythonCommand(array $args) {
 
     public static function remiInfo($token, $remiId, $attribute = null) {
         if ($token === null || $remiId === null) {
-            log::add('JeeRemi', 'error', 'remiInfo: paramètres vides');
             return false;
         }
         $args = ['remi_info', $token, $remiId];
         if ($attribute !== null) $args[] = $attribute;
         return self::runPythonCommand($args);
-    }
-
-    public static function getAlarms($token, $remiId) {
-        return self::runPythonCommand(['get_alarms', $token, $remiId]);
     }
 
     public static function setLuminosity($token, $remiId, $level) {
@@ -103,37 +115,7 @@ private static function runPythonCommand(array $args) {
         return self::runPythonCommand(['stop_music', $token, $remiId]);
     }
 
-    public static function getMusicPath($token, $remiId) {
-        return self::runPythonCommand(['music_path', $token, $remiId]);
-    }
-
-    public static function getMusicMode($token, $remiId) {
-        return self::runPythonCommand(['music_mode', $token, $remiId]);
-    }
-
-    public static function getTemperature($token, $remiId) {
-        return self::runPythonCommand(['get_temperature', $token, $remiId]);
-    }
-
     public static function getFace($token, $remiId) {
         return self::runPythonCommand(['get_face', $token, $remiId]);
     }
-  
-      public static function getBackgroundColor($token, $remiId) {
-        return self::runPythonCommand(['get_backgroundcolor', $token, $remiId]);
-    }
-
-    public static function getFirmwareVersion($token, $remiId) {
-        return self::runPythonCommand(['get_firmwareversion', $token, $remiId]);
-    }
-
-    public static function getFirmwareNeedUpdate($token, $remiId) {
-        return self::runPythonCommand(['get_firmwareneedupdate', $token, $remiId]);
-    }
-
-    public static function getUniqueID($token, $remiId) {
-        return self::runPythonCommand(['get_uniqueid', $token, $remiId]);
-}
-
-
 }
