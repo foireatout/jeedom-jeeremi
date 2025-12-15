@@ -1,3 +1,8 @@
+# 1.1.4 (15/12/2025)
+Amélioration: Gestion des erreurs de l'API UrbanHello
+En cas de difficulté de communication avec l'API d'UrbanHello, 
+l'erreur est capturée et mise en log debug.X
+
 # 1.1.3 (11/12/2025)
 Correction: L'équipement était renommé à chaque synchro.
 Il peut désormais être renommé sans que ce soit écrasé.
