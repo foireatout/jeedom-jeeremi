@@ -4,6 +4,11 @@ require_once dirname(__FILE__) . '/../api/urbanhello_api_wrapper.php';
 
 class JeeRemi extends eqLogic {
 
+    public static function backupExclude() {
+        return ['resources/python_venv'];
+    }
+
+
     public static function syncRemi() {
         log::add('JeeRemi', 'debug', 'Lancement de syncRemi()');
         $sessionToken = config::byKey('sessionToken', 'JeeRemi', '');

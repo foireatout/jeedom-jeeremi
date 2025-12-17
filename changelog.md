@@ -1,3 +1,6 @@
+# 1.1.5 (17/12/2025)
+Exclusion de la sauvegarde du dossier python_venv
+
 # 1.1.4 (15/12/2025)
 Amélioration: Gestion des erreurs de l'API UrbanHello
 En cas de difficulté de communication avec l'API d'UrbanHello, 
