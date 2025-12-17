@@ -79,8 +79,8 @@ class JeeRemi extends eqLogic {
             ['stop_music', 'action', 'other', 'Arrêter musique', []],
             ['veilleuse', 'info', 'numeric', 'Luminosité', ['unit' => '%']],
             ['set_veilleuse', 'action', 'slider', 'Régler luminosité', ['min' => 0, 'max' => 100, 'unit' => '%']],
-            ['light_min', 'info', 'numeric', 'Lum. Ecran Nuit', []],
-            ['set_light_min', 'action', 'slider', 'Régler lum. Ecran Nuit', ['min' => 0, 'max' => 10]],
+            ['light_min', 'info', 'numeric', 'Lum. Ecran Nuit', ['min' => 0, 'max' => 100, 'unit' => '%']],
+            ['set_light_min', 'action', 'slider', 'Régler lum. Ecran Nuit', ['min' => 0, 'max' => 100, 'unit' => '%']],
             ['volume', 'info', 'numeric', 'Volume', ['unit' => '%']],
             ['set_volume', 'action', 'slider', 'Régler volume', ['min' => 0, 'max' => 100, 'unit' => '%']],
             ['face', 'info', 'string', 'Face', []],
@@ -195,6 +195,9 @@ class JeeRemi extends eqLogic {
                         }
                     } elseif ($k === 'temp') {
                         $val = round($val * 0.128);
+                        $cmd->event($val);
+                    } elseif ($k === 'light_min') {
+                        $val = round($val * 10);
                         $cmd->event($val);
                     } elseif ($k === 'background_color') {
                         $cmd->event($backgroundColor);

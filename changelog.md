@@ -1,3 +1,7 @@
+# 1.1.7 (17/12/2025)
+light_min et set_light_min sont désormais en % (0-100) avec un pas de 10 (0,10,20,30,...).
+La valeure saisie est arrondie pour être transmis à l'api.
+
 # 1.1.6 (17/12/2025)
 Ajout de la récupération du paramètre light_min: Luminosité de l'écran de REMI dans le noir (0-10)
 Ajout du réglage du paramètre light_min: Régler la luminosité de l'écran de REMI dans le noir (0-10)
