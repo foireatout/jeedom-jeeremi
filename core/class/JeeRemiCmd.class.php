@@ -31,6 +31,16 @@ class JeeRemiCmd extends cmd {
                         $cmd->event($value);
                     }
                     return $result;
+                
+              	case 'set_light_min':
+                	$value = intval($_options['slider']);
+                    $result = JeeRemiApi::setNightLuminosity($token, $remiId, $value);
+                    $cmd = $eq->getCmd(null, 'light_min');
+                    if (is_object($cmd)) {
+                        $cmd->event($value);
+                    }
+                    return $result;
+                
 
                 case 'set_volume':
                     $value = intval($_options['slider']);
