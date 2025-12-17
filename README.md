@@ -39,6 +39,7 @@ Les informations suivantes sont disponibles pour chaque équipement REMI :
 - IP (info / other) : Adresse IP de l'équipement.
 - RSSI (info / other) : Signal WiFi de l'équipement (en dB).
 - Veilleuse (info / numeric) : Niveau de la veilleuse (0-100 %)
+- light_min (info / numeric) : Niveau de luminosité de l'écran de REMI dans le noir (0-10)
 - Volume (info / numeric) : Niveau du volume (0-100 %)
 - MusicMode (info / numeric) : Type de lecture de la music (0= normal, 1=boucle sur la chanson, 2=boucle la playlist)
 - MusicPath (info / other) : Lecture en cours, chanson chargée.
@@ -50,6 +51,7 @@ Les informations suivantes sont disponibles pour chaque équipement REMI :
 - stop_music (action) : Arrête la lecture en cours.
 - set_veilleuse (action) : Défini le niveau de la veilleuse (0-100).
 - set_volume (action) : Défini le niveau de volume (0-100).
+- set_light_min (action) : Défini la luminosité de l'écran de REMI dans le noir (0-10).
 - awakeFace (action) : Défini "Visage Réveillé/Ouvert" comme visage affiché.
 - sleepyFace (action) : Défini "Visage Endormi/Fermé" comme visage affiché.
 - semiAwakeFace (action) : Défini "Visage SemiReveillé/SemiOuver" (cligne d'un oeil) comme visage affiché.
@@ -58,3 +60,4 @@ Les informations suivantes sont disponibles pour chaque équipement REMI :
 - Remi_unique_ID (info / other) : ID unique de REMI dans l'API
 - firmware_need_update (info / binary) : Indicateur boolean si une mise à jour est disponible
 - firmware_version (info / numeric) : Numero du firmware
+

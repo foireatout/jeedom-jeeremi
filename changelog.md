@@ -1,3 +1,7 @@
+# 1.1.6 (17/12/2025)
+Ajout de la récupération du paramètre light_min: Luminosité de l'écran de REMI dans le noir (0-10)
+Ajout du réglage du paramètre light_min: Régler la luminosité de l'écran de REMI dans le noir (0-10)
+
 # 1.1.5 (17/12/2025)
 Exclusion de la sauvegarde du dossier python_venv
 

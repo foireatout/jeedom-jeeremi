@@ -55,6 +55,17 @@ def set_remi_luminosity(session_token, remi_object_id, level):
     response = requests.put(url, headers=headers, json={"luminosity": level}, timeout=10)
     response.raise_for_status()
     return response.json()
+    
+def set_remi_nightluminosity(session_token, remi_object_id, level):
+    url = f"{API_BASE_URL}/classes/Remi/{remi_object_id}"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "Content-Type": "application/json",
+        "X-Parse-Session-Token": session_token
+    }
+    response = requests.put(url, headers=headers, json={"light_min": level}, timeout=10)
+    response.raise_for_status()
+    return response.json()
 
 
 def set_remi_volume(session_token, remi_object_id, level):
@@ -121,6 +132,9 @@ if __name__ == "__main__":
 
         elif cmd == "set_luminosity":
             print(json.dumps(set_remi_luminosity(sys.argv[2], sys.argv[3], int(sys.argv[4]))))
+            
+        elif cmd == "set_nightluminosity":
+            print(json.dumps(set_remi_nightluminosity(sys.argv[2], sys.argv[3], int(sys.argv[4]))))
 
         elif cmd == "set_volume":
             print(json.dumps(set_remi_volume(sys.argv[2], sys.argv[3], int(sys.argv[4]))))

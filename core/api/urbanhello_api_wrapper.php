@@ -98,6 +98,10 @@ class JeeRemiApi {
     public static function setLuminosity($token, $remiId, $level) {
         return self::runPythonCommand(['set_luminosity', $token, $remiId, (string)$level]);
     }
+  
+    public static function setNightLuminosity($token, $remiId, $level) {
+        return self::runPythonCommand(['set_nightluminosity', $token, $remiId, (string)$level]);
+    }
 
     public static function setVolume($token, $remiId, $level) {
         return self::runPythonCommand(['set_volume', $token, $remiId, (string)$level]);
