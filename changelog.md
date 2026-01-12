@@ -1,3 +1,6 @@
+# 1.1.8 (12/01/2026)
+Correction d'un bug impectant la lecture et arret des musiques.
+
 # 1.1.7 (17/12/2025)
 light_min et set_light_min sont désormais en % (0-100) avec un pas de 10 (0,10,20,30,...).
 La valeure saisie est arrondie pour être transmis à l'api.

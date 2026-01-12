@@ -116,6 +116,35 @@ def set_face_by_name(session_token, remi_object_id, face_name):
     response.raise_for_status()
     return response.json()
 
+def play_music(session_token, remi_object_id, filename):
+    url = f"{API_BASE_URL}/classes/Remi/{remi_object_id}"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "Content-Type": "application/json",
+        "X-Parse-Session-Token": session_token
+    }
+    data = {"musicPath": f"{filename}:play"}
+    response = requests.put(url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()
+
+def stop_music(session_token, remi_object_id):
+    url = f"{API_BASE_URL}/classes/Remi/{remi_object_id}"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "Content-Type": "application/json",
+        "X-Parse-Session-Token": session_token
+    }
+    data = {"musicPath": "pause:0"}
+    response = requests.put(url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()
+
+def get_music_path(session_token, remi_object_id):
+    return get_remi_info(session_token, remi_object_id, "musicPath")
+
+def get_music_mode(session_token, remi_object_id):
+    return get_remi_info(session_token, remi_object_id, "musicMode")
 
 if __name__ == "__main__":
     try:
@@ -132,7 +161,7 @@ if __name__ == "__main__":
 
         elif cmd == "set_luminosity":
             print(json.dumps(set_remi_luminosity(sys.argv[2], sys.argv[3], int(sys.argv[4]))))
-            
+
         elif cmd == "set_nightluminosity":
             print(json.dumps(set_remi_nightluminosity(sys.argv[2], sys.argv[3], int(sys.argv[4]))))
 
@@ -144,6 +173,12 @@ if __name__ == "__main__":
 
         elif cmd == "set_face":
             print(json.dumps(set_face_by_name(sys.argv[2], sys.argv[3], sys.argv[4])))
+
+        elif cmd == "play_music":
+            print(json.dumps(play_music(sys.argv[2], sys.argv[3], sys.argv[4])))
+
+        elif cmd == "stop_music":
+            print(json.dumps(stop_music(sys.argv[2], sys.argv[3])))
 
         else:
             print("Commande inconnue")
