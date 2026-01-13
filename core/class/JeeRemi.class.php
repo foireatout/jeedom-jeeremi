@@ -72,7 +72,7 @@ class JeeRemi extends eqLogic {
         // Commandes obligatoires
         $cmds = [
             ['Remi_ID', 'info', 'string', 'Remi ID', []],
-            ['Remi_unique_ID', 'info', 'other', 'ID unique du REMI', []],
+            ['Remi_unique_ID', 'info', 'string', 'ID unique du REMI', []],
             ['last_update', 'info', 'string', 'Dernière mise à jour', []],
             ['nom', 'info', 'string', 'Nom', []],
             ['firmware_version', 'info', 'string', 'Version du firmware', []],
