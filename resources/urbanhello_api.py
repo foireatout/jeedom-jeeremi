@@ -18,6 +18,74 @@ def login(username, password):
     response.raise_for_status()
     return response.json()
 
+def list_remi_musics(session_token, remi_object_id):
+    url = f"{API_BASE_URL}/classes/Music"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "X-Parse-Session-Token": session_token,
+        "Content-Type": "application/json"
+    }
+
+    where = {
+        "REMI": {
+            "__type": "Pointer",
+            "className": "Remi",
+            "objectId": remi_object_id
+        }
+    }
+
+    response = requests.get(url, headers=headers, params={"where": json.dumps(where)}, timeout=10)
+    response.raise_for_status()
+    data = response.json()
+
+    # Retourner un tableau de dictionnaires avec 'name' et 'path'
+    results = []
+    for music in data.get("results", []):
+        if "name" in music:
+            results.append({
+                "name": music["name"],
+                "path": music.get("path", "")  # path peut être vide
+            })
+
+    return sorted(results, key=lambda x: x["name"])
+
+def list_events(session_token, remi_object_id):
+    url = f"{API_BASE_URL}/classes/Event"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "X-Parse-Session-Token": session_token,
+        "Content-Type": "application/json"
+    }
+
+    where = {
+        "remi": {
+            "__type": "Pointer",
+            "className": "Remi",
+            "objectId": remi_object_id
+        }
+    }
+
+    response = requests.get(url, headers=headers, params={"where": json.dumps(where)}, timeout=10)
+    response.raise_for_status()
+    return response.json().get("results", [])
+
+
+
+def set_alarm_enabled(session_token, alarm_id, enabled):
+    url = f"{API_BASE_URL}/classes/Event/{alarm_id}"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "X-Parse-Session-Token": session_token,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "enabled": bool(int(enabled))
+    }
+
+    response = requests.put(url, headers=headers, json=payload, timeout=10)
+    response.raise_for_status()
+    return response.json()
+
 
 def get_user_info(session_token, user_object_id, attribute=None):
     url = f"{API_BASE_URL}/users/{user_object_id}"
@@ -179,6 +247,17 @@ if __name__ == "__main__":
 
         elif cmd == "stop_music":
             print(json.dumps(stop_music(sys.argv[2], sys.argv[3])))
+
+        elif cmd == "list_music":
+            musics = list_remi_musics(sys.argv[2], sys.argv[3])
+            print(json.dumps(musics))
+
+        elif cmd == "list_events":
+            events = list_events(sys.argv[2], sys.argv[3])
+            print(json.dumps(events))
+
+        elif cmd == "set_alarm_enabled":
+            print(json.dumps(set_alarm_enabled(sys.argv[2], sys.argv[3], sys.argv[4])))
 
         else:
             print("Commande inconnue")

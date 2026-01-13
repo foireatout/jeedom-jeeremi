@@ -36,7 +36,7 @@ class JeeRemiApi {
         $returnVar = 0;
         exec($cmdEscaped . ' 2>&1', $output, $returnVar);
         $outputText = trim(implode("\n", $output));
-        
+
         if ($returnVar !== 0) {
 
             log::add('JeeRemi', 'error', 'JeeRemi: API non disponible');
@@ -98,7 +98,7 @@ class JeeRemiApi {
     public static function setLuminosity($token, $remiId, $level) {
         return self::runPythonCommand(['set_luminosity', $token, $remiId, (string)$level]);
     }
-  
+
     public static function setNightLuminosity($token, $remiId, $level) {
         return self::runPythonCommand(['set_nightluminosity', $token, $remiId, (string)$level]);
     }
@@ -121,5 +121,17 @@ class JeeRemiApi {
 
     public static function getFace($token, $remiId) {
         return self::runPythonCommand(['get_face', $token, $remiId]);
+    }
+
+    public static function listMusics($token, $remiId) {
+        return self::runPythonCommand(['list_music', $token, $remiId]);
+    }
+
+    public static function listAlarms($token, $remiId) {
+        return self::runPythonCommand(['list_events', $token, $remiId]);
+    }
+
+    public static function setAlarmEnabled($token, $alarmId, $enabled) {
+        return self::runPythonCommand(['set_alarm_enabled', $token, $alarmId, $enabled ? '1' : '0']);
     }
 }
