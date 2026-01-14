@@ -83,57 +83,84 @@ class JeeRemiCmd extends cmd {
                 case 'stop_music':
                     return JeeRemiApi::stopMusic($token, $remiId);
 
-				case 'play_selectmusic':
-					if (!isset($_options['select'])) {
-						throw new Exception('Aucune musique sélectionnée');
-					}
-					return JeeRemiApi::playMusic($token, $remiId, $_options['select']);
+		case 'play_selectmusic':
+		    if (!isset($_options['select'])) {
+			throw new Exception('Aucune musique sélectionnée');
+	            }
+		    return JeeRemiApi::playMusic($token, $remiId, $_options['select']);
 
-				case 'event_enable':
-				case 'event_disable':
-					if (!isset($_options['select'])) {
-						throw new Exception('Aucun réveil sélectionné');
-					}
-					$enabled = ($logical === 'event_enable');
-					$alarmId = $_options['select'];
-					$result = JeeRemiApi::setAlarmEnabled($token, $alarmId, $enabled);
-					$eq = $this->getEqLogic();
-					if (is_object($eq)) {
-						$eq->updateInfos();
-					}
+		case 'event_enable':
+		case 'event_disable':
+		    if (!isset($_options['select'])) {
+			throw new Exception('Aucun réveil sélectionné');
+		    }
+		    $enabled = ($logical === 'event_enable');
+		    $alarmId = $_options['select'];
+		    $result = JeeRemiApi::setAlarmEnabled($token, $alarmId, $enabled);
+		    $eq = $this->getEqLogic();
+		    if (is_object($eq)) {
+			$eq->updateInfos();
+		    }
+         	    return $result;
 
-					return $result;
+		case 'set_face':
+		    if (!isset($_options['select'])) {
+			throw new Exception('Aucun visage sélectionné');
+		    }
+		    $face = $_options['select'];
+		    $result = JeeRemiApi::setFace($token, $remiId, $face);
 
-				case 'set_face':
-					if (!isset($_options['select'])) {
-						throw new Exception('Aucun visage sélectionné');
-					}
-					$face = $_options['select']; // awakeFace, sleepyFace, etc.
-					$result = JeeRemiApi::setFace($token, $remiId, $face);
+                    $eq = $this->getEqLogic();
+		    if (is_object($eq)) {
+ 			$faceCmd = $eq->getCmd(null, 'face');
+			if (is_object($faceCmd)) {
+				$faceCmd->event($face);
+			}
 
-					// Mettre à jour uniquement les commandes face et Visage_num
-					$eq = $this->getEqLogic();
-					if (is_object($eq)) {
-						// Mettre à jour la commande "face"
-						$faceCmd = $eq->getCmd(null, 'face');
-						if (is_object($faceCmd)) {
-							$faceCmd->event($face);
-						}
+	         	$visageNumCmd = $eq->getCmd(null, 'Visage_num');
+		        if (is_object($visageNumCmd)) {
+				$faceMap = [
+				'awakeFace' => 1,
+				'sleepyFace' => 2,
+				'semiAwakeFace' => 3,
+				'blankFace' => 4
+				];
+				$visageNumCmd->event($faceMap[$face] ?? 0);
+		    	}
+		    }
+		    return $result;
 
-						// Mettre à jour la commande "Visage_num"
-						$visageNumCmd = $eq->getCmd(null, 'Visage_num');
-						if (is_object($visageNumCmd)) {
-							$faceMap = [
-								'awakeFace' => 1,
-								'sleepyFace' => 2,
-								'semiAwakeFace' => 3,
-								'blankFace' => 4
-							];
-							$visageNumCmd->event($faceMap[$face] ?? 0);
-						}
-					}
-					return $result;
 
+	 	case 'event_set_param':
+                    $title = $_options['title'];
+                    $message = $_options['message'];
+                    $alarmId = str_replace('alarm_', '', $title);
+
+                    $parts = explode(';', $message);
+                    if (count($parts) < 2) {
+                        log::add('JeeRemi', 'error', 'Format message invalide pour event_set_param. Attendu: clé;valeur');
+                        return false;
+                    }
+
+                    $key = trim($parts[0]);
+                    $val = trim($parts[1]);
+
+                    $payload = $this->getEqLogic()->prepareEventPayload($key, $val);
+
+                    if (empty($payload)) {
+                        log::add('JeeRemi', 'error', 'Paramètre inconnu ou valeur mal formée : ' . $key);
+                        return false;
+                    }
+
+                    $result = JeeRemiApi::updateEvent($token, $alarmId, $payload);
+//                    $this->getEqLogic()->refresh();
+
+                    $eq = $this->getEqLogic();
+                    if (is_object($eq)) {
+                        $eq->updateInfos();
+                    }
+
+                    return $result;
 
                 case 'refresh':
                     $eq->updateInfos();

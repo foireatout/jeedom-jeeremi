@@ -38,13 +38,12 @@ def list_remi_musics(session_token, remi_object_id):
     response.raise_for_status()
     data = response.json()
 
-    # Retourner un tableau de dictionnaires avec 'name' et 'path'
     results = []
     for music in data.get("results", []):
         if "name" in music:
             results.append({
                 "name": music["name"],
-                "path": music.get("path", "")  # path peut être vide
+                "path": music.get("path", "")
             })
 
     return sorted(results, key=lambda x: x["name"])
@@ -70,6 +69,16 @@ def list_events(session_token, remi_object_id):
     return response.json().get("results", [])
 
 
+def update_event(session_token, event_id, payload_dict):
+    url = f"{API_BASE_URL}/classes/Event/{event_id}"
+    headers = {
+        "X-Parse-Application-Id": PARSE_APP_ID,
+        "Content-Type": "application/json",
+        "X-Parse-Session-Token": session_token
+    }
+    response = requests.put(url, headers=headers, json=payload_dict, timeout=10)
+    response.raise_for_status()
+    return response.json()
 
 def set_alarm_enabled(session_token, alarm_id, enabled):
     url = f"{API_BASE_URL}/classes/Event/{alarm_id}"
@@ -258,6 +267,10 @@ if __name__ == "__main__":
 
         elif cmd == "set_alarm_enabled":
             print(json.dumps(set_alarm_enabled(sys.argv[2], sys.argv[3], sys.argv[4])))
+
+        elif cmd == "update_event":
+            payload = json.loads(sys.argv[4])
+            print(json.dumps(update_event(sys.argv[2], sys.argv[3], payload)))
 
         else:
             print("Commande inconnue")

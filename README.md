@@ -73,4 +73,27 @@ Les informations suivantes sont disponibles pour chaque équipement REMI :
 - day_reconnection_count (info / numeric) : Si remonté par l'API, nombre de reconnexions du jour
 - day_disconnection_time (info / numeric) : Si remonté par l'API, nombre de déconnexions du jour
 - alarm_XXXXX (info / binary) : Il s'agit des events/reveils paramétrés. 0=disable, 1=enable
+- event_set_param (action / message): Permet de modifier un event (reveil/alarme) par son id. (voir détails ci-dessous)
 
+# Détails de event_set_param
+Il s'agit d'une action de type "message", Jeedom attend donc un titre et un message.
+titre: id de l'alarme: soit alarm_xxxxx soit xxxxx ==>  Vous trouverez l'id dans la colonne Logical ID de l'équipement lié à l'event.
+message: passer deux paramatres au format clé;valeur.
+
+Liste des clés et valeurs prises en charge par la commande:
+- enabled (0 ou 1, true ou false, on ou off): active ou désactive l'event.
+- volume (0-100): reglage du volume pour l'event
+- name (string): renomme l'event
+- music_path: modifie la musique à lire au moment de l'event (prendre le path dans music_list pour selectionner la musique)
+- time (hhmm ou hh:mm): modifie l'heure de l'event
+- light (0-100): modifie la veilleuse de l'event
+- recurrence (lun,mar,mer,jeu,ven,sam,dim exemple: 1,1,1,1,1,0,0): modifie les jours où l'event se produit.
+- face (awakeFace,sleepyFace,semiAwakeFace,blankFace): modifie le visage à afficher lors de l'event
+
+Exemple1:
+titre: alarm_xxxxxx
+message: enabled;1
+
+Exemple2:
+titre: alarm_xxxxxx
+message: recurrence;1,1,1,1,1,0,0

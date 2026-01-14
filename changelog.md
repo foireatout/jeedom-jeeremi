@@ -1,3 +1,8 @@
+# 1.2.3 (14/01/2026)
+Correction d'un bug mineur sur remi_unique_id
+Nettoyage de code
+Création de la commande "event_set_param" permettant de modifier un event (reveil/alarm): voir README
+
 # 1.2.0 (13/01/2026)
 Création des commandes:
 - music_list (info / other) : Liste des musiques sur le stockage du REMI.

@@ -58,14 +58,75 @@ class JeeRemi extends eqLogic {
         log::add('JeeRemi', 'debug', 'syncRemi terminé');
     }
 
-    // Cron 5 minutes
+
+	public function prepareEventPayload($param, $value) {
+	    $payload = [];
+	    switch ($param) {
+	        case 'enabled':
+	            $payload['enabled'] = ($value == '1' || $value == 'true' || $value == 'on');
+	            break;
+	        case 'volume':
+	            $payload['volume'] = (int)$value;
+	            break;
+	        case 'name':
+	            $payload['name'] = (string)$value;
+	            break;
+	        case 'music_path':
+	            $payload['music_path'] = (string)$value;
+	            break;
+		case 'time':
+	            $h = null; 
+	            $m = null;
+
+	            if (strpos($value, ':') !== false) {
+	                $parts = explode(':', $value);
+	                $h = $parts[0];
+	                $m = $parts[1];
+	            } elseif (strlen($value) == 4 && is_numeric($value)) {
+	                $h = substr($value, 0, 2);
+	                $m = substr($value, 2, 2);
+	            }
+
+        	    if ($h !== null && $m !== null) {
+	                $payload['event_time'] = [(int)$h, (int)$m];
+	            } else {
+	                log::add('JeeRemi', 'error', 'Format de temps invalide pour event_set_param : ' . $value);
+        	    }
+	            break;
+		case 'light': 
+        	    $payload['brightness'] = max(0, min(100, (int)$value));
+	            break;
+	        case 'recurrence':
+	            $days = explode(',', $value);
+	            if (count($days) == 7) {
+	                $payload['recurrence'] = array_map('intval', $days);
+	            }
+	            break;
+	        case 'face':
+	            $faceMap = [
+	                'awakeFace'     => 'fIjF0yWRxX',
+	                'sleepyFace'    => 'rnAltoFwYC',
+	                'semiAwakeFace' => '9faiiPGBVv',
+	                'blankFace'     => 'fIjF0yWRxX'
+	            ];
+	            if (isset($faceMap[$value])) {
+	                $payload['face'] = [
+	                    '__type' => 'Pointer',
+	                    'className' => 'Face',
+	                    'objectId' => $faceMap[$value]
+	                ];
+	            }
+	            break;
+	    }
+	    return $payload;
+	}
+
     public static function cron5() {
         foreach (self::byType('JeeRemi') as $eq) {
             $eq->updateInfos();
         }
     }
 
-    // Création des commandes
     public function createCommands() {
         log::add('JeeRemi', 'debug', 'Création des commandes pour équipement: ' . $this->getLogicalId());
 
@@ -106,6 +167,7 @@ class JeeRemi extends eqLogic {
             ['refresh', 'action', 'other', 'Rafraîchir', []],
             ['event_enable', 'action', 'select', 'Activer un réveil', []],
             ['event_disable', 'action', 'select', 'Désactiver un réveil', []],
+	    ['event_set_param', 'action', 'message', 'Modifier un paramètre de reveil', []],
             ['set_face', 'action', 'select', 'Changer de visage', [
                 'listValue' => 'awakeFace|Visage éveillé;sleepyFace|Visage endormi;blankFace|Visage blanc;semiAwakeFace|Visage semi-ouvert'
             ]],
@@ -138,7 +200,6 @@ class JeeRemi extends eqLogic {
             }
         }
 
-        // Commandes optionnelles (dataBundle)
         $optionalCommands = [
             ['gettime_wayback_max_s', 'info', 'numeric', 'Gettime Wayback Max', ['unit' => 's'], true],
             ['call_wayback_max_s', 'info', 'numeric', 'Call Wayback Max', ['unit' => 's'], true],
@@ -155,7 +216,6 @@ class JeeRemi extends eqLogic {
         }
     }
 
-    // Vérifie si une clé existe dans dataBundle
     private function hasDataBundleKey($key) {
         $info = $this->getRemiInfo();
         if (!isset($info['dataBundle'])) {
@@ -179,7 +239,6 @@ class JeeRemi extends eqLogic {
         return false;
     }
 
-    // Crée une commande optionnelle
     private function createOptionalCommand($logical, $type, $subtype, $name, $opts) {
         $cmd = $this->getCmd(null, $logical);
         if (!is_object($cmd)) {
@@ -197,7 +256,6 @@ class JeeRemi extends eqLogic {
         }
     }
 
-    // Récupère les infos du REMI
     private function getRemiInfo() {
         $username = config::byKey('username', 'JeeRemi', '');
         $password = config::byKey('password', 'JeeRemi', '');
@@ -213,7 +271,6 @@ class JeeRemi extends eqLogic {
         return JeeRemiApi::remiInfo($token, $id);
     }
 
-    // Met à jour les listes d'actions pour event_enable/event_disable
     private function updateAlarmActionLists(array $alarms) {
         $listValues = [];
         foreach ($alarms as $alarm) {
@@ -240,7 +297,6 @@ class JeeRemi extends eqLogic {
         }
     }
 
-    // Met à jour la liste des réveils (event_list)
     private function updateEventListInfo(array $alarms) {
         $eventListCmd = $this->getCmd(null, 'event_list');
         if (!is_object($eventListCmd)) {
@@ -261,9 +317,7 @@ class JeeRemi extends eqLogic {
         $eventListCmd->event(implode("\n", $lines));
     }
 
-    // Synchronise les alarmes
     private function syncAlarms(array $alarms, $token) {
-        // Récupérer les objectId des alarmes actuelles
         $currentAlarmIds = [];
         foreach ($alarms as $alarm) {
             if (!empty($alarm['objectId'])) {
@@ -271,7 +325,6 @@ class JeeRemi extends eqLogic {
             }
         }
 
-        // Supprimer les commandes alarm_* dont l'objectId n'est plus dans $currentAlarmIds
         $existingCommands = $this->getCmd();
         foreach ($existingCommands as $cmd) {
             if (strpos($cmd->getLogicalId(), 'alarm_') === 0) {
@@ -283,7 +336,6 @@ class JeeRemi extends eqLogic {
             }
         }
 
-        // Créer/mettre à jour les commandes pour les alarmes actuelles
         foreach ($alarms as $alarm) {
             if (empty($alarm['objectId']) || empty($alarm['event_time'])) {
                 continue;
@@ -299,7 +351,6 @@ class JeeRemi extends eqLogic {
             $displayName = $time . ' – ' . $name;
             $logicalId = 'alarm_' . $alarm['objectId'];
 
-            // Vérifier si la commande existe déjà
             $cmd = cmd::byEqLogicIdAndLogicalId($this->getId(), $logicalId);
             if (!is_object($cmd)) {
                 $cmd = new cmd();
@@ -315,16 +366,13 @@ class JeeRemi extends eqLogic {
                 log::add('JeeRemi', 'info', '[ALARMS] Création commande : ' . $displayName);
             }
 
-            // Mettre à jour l'état
             $state = !empty($alarm['enabled']) ? 1 : 0;
             $cmd->event($state);
         }
 
-        // Rafraîchir l'équipement
         $this->refresh();
     }
 
-    // Met à jour les infos du REMI
     public function updateInfos() {
         log::add('JeeRemi', 'debug', 'Mise à jour des infos pour REMI: ' . $this->getLogicalId());
         $username = config::byKey('username', 'JeeRemi', '');
@@ -351,7 +399,6 @@ class JeeRemi extends eqLogic {
         if (is_array($musics) && count($musics) > 0) {
             $listValue = [];
             foreach ($musics as $music) {
-                // Cas 1 : $music est un tableau avec 'name' et 'path'
                 if (is_array($music) && isset($music['name'])) {
                     $fileName = $music['name'];
                     $filePath = isset($music['path']) && $music['path'] !== '' ? $music['path'] . '\\' : '';
@@ -359,27 +406,23 @@ class JeeRemi extends eqLogic {
                     $displayLabel = pathinfo($fileName, PATHINFO_FILENAME); // Nom sans extension pour l'affichage
                     $listValue[] = $fullPath . '|' . $displayLabel;
                 }
-                // Cas 2 : $music est une chaîne (ancien format)
                 else {
                     $displayLabel = pathinfo($music, PATHINFO_FILENAME);
                     $listValue[] = $music . '|' . $displayLabel;
                 }
             }
 
-            // Mise à jour de play_selectmusic
             $selectCmd = $this->getCmd(null, 'play_selectmusic');
             if (is_object($selectCmd)) {
                 $selectCmd->setConfiguration('listValue', implode(';', $listValue));
                 $selectCmd->save();
             }
 
-            // Mise à jour de music_list (liste brute)
             $listCmd = $this->getCmd(null, 'music_list');
             if (is_object($listCmd)) {
                 $listCmd->event(json_encode($musics, JSON_UNESCAPED_UNICODE));
             }
         } else {
-            // Valeur par défaut si aucune musique n'est disponible
             $selectCmd = $this->getCmd(null, 'play_selectmusic');
             if (is_object($selectCmd)) {
                 $selectCmd->setConfiguration('listValue', '|Aucune musique disponible');
@@ -415,7 +458,6 @@ class JeeRemi extends eqLogic {
                 $data = $info['dataBundle'];
             }
 
-            // Créer et mettre à jour les commandes uniquement si les clés existent dans $data
             $optionalCommands = [
                 'gettime_wayback_max_s' => ['type' => 'info', 'subtype' => 'numeric', 'name' => 'Gettime Wayback Max', 'unit' => 's'],
                 'call_wayback_max_s' => ['type' => 'info', 'subtype' => 'numeric', 'name' => 'Call Wayback Max', 'unit' => 's'],
@@ -534,4 +576,3 @@ class JeeRemi extends eqLogic {
         }
     }
 }
-

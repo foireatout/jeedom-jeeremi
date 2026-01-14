@@ -134,4 +134,8 @@ class JeeRemiApi {
     public static function setAlarmEnabled($token, $alarmId, $enabled) {
         return self::runPythonCommand(['set_alarm_enabled', $token, $alarmId, $enabled ? '1' : '0']);
     }
+
+    public static function updateEvent($token, $eventId, $payload) {
+	return self::runPythonCommand(['update_event', $token, $eventId, json_encode($payload)]);
+    }
 }
