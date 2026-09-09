@@ -1,3 +1,11 @@
+# 1.2.4 (09/09/2026)
+Optimisation API & Session : mise en cache et réutilisation persistante du jeton de session et suppression des connexions systématiques (`login`) lors des crons et exécutions de commandes.
+Gestion des erreurs : tolérance aux déconnexions nocturnes et micro-coupures de l'API avec seuil de 3 échecs consécutifs avant émission d'un log Jeedom.
+Performances Jeedom : bascule des mises à jour d'état sur `checkAndUpdateCmd` pour réduire drastiquement les écritures en base de données et les événements superflus.
+Correction de l'identifiant pour le visage blanc (`blankFace`)
+Suppression de la requête HTTP redondante lors de la récupération de l'expression du visage.
+Ajout de délais d'expiration stricts (timeouts) sur les commandes musicales en Python.
+
 # 1.2.3 (14/01/2026)
 Correction d'un bug mineur sur remi_unique_id
 Nettoyage de code

@@ -201,7 +201,7 @@ def play_music(session_token, remi_object_id, filename):
         "X-Parse-Session-Token": session_token
     }
     data = {"musicPath": f"{filename}:play"}
-    response = requests.put(url, headers=headers, json=data)
+    response = requests.put(url, headers=headers, json=data, timeout=10) # <-- Ajout timeout
     response.raise_for_status()
     return response.json()
 
@@ -213,7 +213,7 @@ def stop_music(session_token, remi_object_id):
         "X-Parse-Session-Token": session_token
     }
     data = {"musicPath": "pause:0"}
-    response = requests.put(url, headers=headers, json=data)
+    response = requests.put(url, headers=headers, json=data, timeout=10) # <-- Ajout timeout
     response.raise_for_status()
     return response.json()
 
