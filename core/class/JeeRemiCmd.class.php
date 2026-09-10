@@ -11,15 +11,12 @@ class JeeRemiCmd extends cmd {
             }
 
             $remiId = $eq->getLogicalId();
-            $username = config::byKey('username', 'JeeRemi', '');
-            $password = config::byKey('password', 'JeeRemi', '');
-            $login = JeeRemiApi::login($username, $password);
-
-            if (!is_array($login) || !isset($login['sessionToken'])) {
-                throw new Exception('Impossible de récupérer le token API');
+            // Utilisation du token existant
+            $token = JeeRemi::getValidSessionToken();
+            if (!$token) {
+                throw new Exception('Impossible d\'obtenir un token API valide');
             }
 
-            $token = $login['sessionToken'];
             $logical = $this->getLogicalId();
 
             switch ($logical) {

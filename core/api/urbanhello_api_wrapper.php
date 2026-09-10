@@ -38,21 +38,7 @@ class JeeRemiApi {
         $outputText = trim(implode("\n", $output));
 
         if ($returnVar !== 0) {
-
-            log::add('JeeRemi', 'error', 'JeeRemi: API non disponible');
-
-            log::add(
-                'JeeRemi',
-                'info',
-                'ERROR: Erreur de communication avec l\'API UrbanHello.'
-            );
-
-            log::add(
-                'JeeRemi',
-                'debug',
-                'Erreur Python (rc=' . $returnVar . ') : ' . $outputText
-            );
-
+            log::add('JeeRemi', 'warning', 'Échec appel API UrbanHello (rc=' . $returnVar . ') : ' . $outputText);
             return false;
         }
 
